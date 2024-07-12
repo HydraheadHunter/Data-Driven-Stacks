@@ -1,0 +1,45 @@
+{
+	"schemaVersion": 1,
+	"id": "bigger-stacks",
+	"version": "${version}",
+	"name": "BiggerStacks",
+	"description": "Increase the arbetrary cap on max_stack_count and count from 99 to 2048",
+	"authors": [
+		"HydraHeadHunter",
+		"7410"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/bigger_stacks/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"hydraheadhunter.bigstacks.BiggerStacks"
+		],
+		"client": [
+			"hydraheadhunter.bigstacks.BiggerStacksClient"
+		],
+		"fabric-datagen": [
+			"hydraheadhunter.bigstacks.TemplateModDataGenerator"
+		]
+	},
+	"mixins": [
+		"bigger-stacks.mixins.json",
+		{
+			"config": "bigger-stacks.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.15.11",
+		"minecraft": "~1.21",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

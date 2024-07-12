@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"package": "hydraheadhunter.bigstacks.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"DataComponentTypesMixin",
+		"ItemStack_SizeMixin",
+		"Inventory_StackSizeMixin",
+		"ItemCommand_StackSizeMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
