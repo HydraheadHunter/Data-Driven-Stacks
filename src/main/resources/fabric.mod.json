@@ -13,7 +13,7 @@
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/bigger_stacks/icon.png",
+	"icon": "assets/bigger-stacks/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
@@ -23,7 +23,7 @@
 			"hydraheadhunter.bigstacks.BiggerStacksClient"
 		],
 		"fabric-datagen": [
-			"hydraheadhunter.bigstacks.TemplateModDataGenerator"
+			"hydraheadhunter.bigstacks.BiggerStacksDataGenerator"
 		]
 	},
 	"mixins": [
