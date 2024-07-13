@@ -49,7 +49,7 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 		int max_stack_size_is = components.getOrDefault(DataComponentTypes.MAX_STACK_SIZE, target);
 		int max_stack_size_target = Math.min(target,MAX_STACK_SIZE_CAP);
 		
-		return StackSizeMayChange(stack, max_stack_size_target) && max_stack_size_is < max_stack_size_target;
+		return StackSizeMayChange(stack, max_stack_size_target) && max_stack_size_is != max_stack_size_target;
 	}
 	
 	@Unique
