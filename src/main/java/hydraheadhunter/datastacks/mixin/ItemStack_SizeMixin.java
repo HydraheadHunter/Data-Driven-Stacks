@@ -2,10 +2,7 @@ package hydraheadhunter.datastacks.mixin;
 
 import hydraheadhunter.datastacks.util.ModTags;
 import net.fabricmc.fabric.api.item.v1.FabricItemStack;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentHolder;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.*;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -13,6 +10,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.*;
 
 import static hydraheadhunter.datastacks.DataDrivenStacks.MAX_STACK_SIZE_CAP;
 
@@ -28,32 +27,62 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 	private void updateMaxStackSizeWithTag(CallbackInfoReturnable<Integer> cir){
 		ItemStack thisAsStack = (ItemStack)(Object) this;
 		
-		if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_1   ) && StackSizeMustChange(thisAsStack,    1) ) ChangeStackSize(thisAsStack,    1);
-		if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_2   ) && StackSizeMustChange(thisAsStack,    2) ) ChangeStackSize(thisAsStack,    2);
-		if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_4   ) && StackSizeMustChange(thisAsStack,    4) ) ChangeStackSize(thisAsStack,    4);
-		if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_8   ) && StackSizeMustChange(thisAsStack,    8) ) ChangeStackSize(thisAsStack,    8);
-		if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_16  ) && StackSizeMustChange(thisAsStack,   16) ) ChangeStackSize(thisAsStack,   16);
-		if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_32  ) && StackSizeMustChange(thisAsStack,   32) ) ChangeStackSize(thisAsStack,   32);
-		if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_64  ) && StackSizeMustChange(thisAsStack,   64) ) ChangeStackSize(thisAsStack,   64);
-		if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_128 ) && StackSizeMustChange(thisAsStack,  128) ) ChangeStackSize(thisAsStack,  128);
-		if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_256 ) && StackSizeMustChange(thisAsStack,  256) ) ChangeStackSize(thisAsStack,  256);
-		if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_512 ) && StackSizeMustChange(thisAsStack,  512) ) ChangeStackSize(thisAsStack,  512);
-		if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_1024) && StackSizeMustChange(thisAsStack, 1024) ) ChangeStackSize(thisAsStack, 1024);
-		if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_2048) && StackSizeMustChange(thisAsStack, 2048) ) ChangeStackSize(thisAsStack, 2048);
+		if      ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_2048)) ChangeStackSize(thisAsStack, 2048 );
+		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_1024)) ChangeStackSize(thisAsStack, 1024 );
+		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_512 )) ChangeStackSize(thisAsStack,  512 );
+		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_256 )) ChangeStackSize(thisAsStack,  256 );
+		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_128 )) ChangeStackSize(thisAsStack,  128 );
+		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_64  )) ChangeStackSize(thisAsStack,   64 );
+		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_32  )) ChangeStackSize(thisAsStack,   32 );
+		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_16  )) ChangeStackSize(thisAsStack,   16 );
+		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_8   )) ChangeStackSize(thisAsStack,    8 );
+		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_4   )) ChangeStackSize(thisAsStack,    4 );
+		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_2   )) ChangeStackSize(thisAsStack,    2 );
+		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_1   )) ChangeStackSize(thisAsStack,    1 );
 		
 	}
 	
-	@Unique
-	private boolean StackSizeMustChange(ItemStack stack, int target){
-		ComponentMap components = stack.getComponents();
-		int max_stack_size_is = components.getOrDefault(DataComponentTypes.MAX_STACK_SIZE, target);
-		int max_stack_size_target = Math.min(target,MAX_STACK_SIZE_CAP);
+	@Inject(method="areItemsAndComponentsEqual", at= @At("TAIL"), cancellable = true)
+	private static void areItemAndComponentsBarMaxStackSizeEqual(ItemStack stack, ItemStack otherStack, CallbackInfoReturnable<Boolean> cir){
+		if (cir.getReturnValue()) cir.setReturnValue(true);
 		
-		return StackSizeMayChange(stack, max_stack_size_target) && max_stack_size_is != max_stack_size_target;
+		int maxCountA = getUnalteredMaxCount(stack);
+		int maxCountB = getUnalteredMaxCount(otherStack);
+		if ( maxCountA != maxCountB) {
+			boolean AgtB = maxCountA>maxCountB;
+			ItemStack stack1= AgtB? stack:otherStack;
+			ItemStack stack2= AgtB? otherStack:stack;
+			int maxCount1= AgtB? maxCountA:maxCountB;
+			int maxCount2= AgtB? maxCountB:maxCountA;
+			
+			if ( stack2.getCount()>= maxCount2){ cir.setReturnValue(false);}
+			
+			Set<ComponentType<?>> stackComponents1 = stack1.getComponents().getTypes();
+			Set<ComponentType<?>> stackComponents2 = stack2.getComponents().getTypes();
+			
+			ArrayList<ComponentType<?>> dummy1 = new ArrayList<>();
+			ArrayList<ComponentType<?>> dummy2 = new ArrayList<>();
+			for (ComponentType<?> com : stackComponents1) { if (!com.equals(DataComponentTypes.MAX_STACK_SIZE)) dummy1.add(com); }
+			for (ComponentType<?> com : stackComponents2) { if (!com.equals(DataComponentTypes.MAX_STACK_SIZE)) dummy2.add(com); }
+			
+			
+			cir.setReturnValue(stack.isEmpty() && otherStack.isEmpty() ? true : Objects.equals(dummy1, dummy2));
+			
+		}
+	}
+	
+	
+	
+	
+	
+	@Unique
+	private void ChangeStackSize(ItemStack stack, int target){
+		if ( MaxStackSizeMayChange(stack,target) && MaxStackSizeNeedsChanged(stack,target) )
+			stack.set(DataComponentTypes.MAX_STACK_SIZE, target);
 	}
 	
 	@Unique
-	private boolean StackSizeMayChange(ItemStack stack, int max_stack_size_target){
+	private boolean MaxStackSizeMayChange(ItemStack stack, int max_stack_size_target){
 		ComponentMap components = stack.getComponents();
 		int count = stack.getCount();
 		if (count > max_stack_size_target) return false;
@@ -62,12 +91,15 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 	}
 	
 	@Unique
-	private void ChangeStackSize(ItemStack stack, int target){
-			ComponentChanges.Builder componentChangesBuilder = ComponentChanges.builder();
-			componentChangesBuilder.add(DataComponentTypes.MAX_STACK_SIZE, target);
-			ComponentChanges componentChanges = componentChangesBuilder.build();
-			
-			stack.applyChanges(componentChanges);
+	private boolean MaxStackSizeNeedsChanged(ItemStack stack, int target){
+		int max_stack_size_is = getUnalteredMaxCount(stack);
+		int max_stack_size_target = Math.min(target,MAX_STACK_SIZE_CAP);
+		return max_stack_size_is != max_stack_size_target;
 	}
 	
+	
+	@Unique
+	private static int getUnalteredMaxCount(ItemStack stack){
+		return stack.getOrDefault(DataComponentTypes.MAX_STACK_SIZE, 1);
+	}
 }
