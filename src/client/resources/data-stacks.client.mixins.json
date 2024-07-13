@@ -1,6 +1,6 @@
 {
 	"required": true,
-	"package": "hydraheadhunter.bigstacks.mixin.client",
+	"package": "hydraheadhunter.datastacks.mixin.client",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"ExampleClientMixin"

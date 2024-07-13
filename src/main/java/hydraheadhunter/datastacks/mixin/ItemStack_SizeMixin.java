@@ -1,6 +1,6 @@
-package hydraheadhunter.bigstacks.mixin;
+package hydraheadhunter.datastacks.mixin;
 
-import hydraheadhunter.bigstacks.util.ModTags;
+import hydraheadhunter.datastacks.util.ModTags;
 import net.fabricmc.fabric.api.item.v1.FabricItemStack;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.ComponentHolder;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static hydraheadhunter.bigstacks.BiggerStacks.MAX_STACK_SIZE_CAP;
+import static hydraheadhunter.datastacks.DataDrivenStacks.MAX_STACK_SIZE_CAP;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItemStack {
@@ -27,6 +27,7 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 	@Inject(method="getMaxCount", at = @At("HEAD"))
 	private void updateMaxStackSizeWithTag(CallbackInfoReturnable<Integer> cir){
 		ItemStack thisAsStack = (ItemStack)(Object) this;
+		
 		if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_1   ) && StackSizeMustChange(thisAsStack,    1) ) ChangeStackSize(thisAsStack,    1);
 		if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_2   ) && StackSizeMustChange(thisAsStack,    2) ) ChangeStackSize(thisAsStack,    2);
 		if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_4   ) && StackSizeMustChange(thisAsStack,    4) ) ChangeStackSize(thisAsStack,    4);

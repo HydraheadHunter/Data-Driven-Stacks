@@ -1,4 +1,4 @@
-package hydraheadhunter.bigstacks.mixin.client;
+package hydraheadhunter.datastacks.mixin.client;
 
 import net.minecraft.client.MinecraftClient;
 import org.spongepowered.asm.mixin.Mixin;

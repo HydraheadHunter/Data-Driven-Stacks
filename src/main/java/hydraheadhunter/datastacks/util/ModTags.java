@@ -1,4 +1,4 @@
-package hydraheadhunter.bigstacks.util;
+package hydraheadhunter.datastacks.util;
 
 
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -9,10 +9,14 @@ import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 
 
-import static hydraheadhunter.bigstacks.BiggerStacks.MOD_ID;
+import java.util.ArrayList;
+
+import static hydraheadhunter.datastacks.DataDrivenStacks.MOD_ID;
 
 public class ModTags {
 	public static class Items {
+		public static final ArrayList<TagKey<Item>> STACK_SIZE_TAGS = new ArrayList<>();
+		
 		public static final TagKey<Item> IS_STACK_SIZE_1		= createTag("stack_size_1"	);
 		public static final TagKey<Item> IS_STACK_SIZE_2		= createTag("stack_size_2"	);
 		public static final TagKey<Item> IS_STACK_SIZE_4		= createTag("stack_size_4"	);

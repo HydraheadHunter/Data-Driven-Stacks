@@ -1,9 +1,9 @@
 {
 	"schemaVersion": 1,
-	"id": "bigger-stacks",
+	"id": "data-stacks",
 	"version": "${version}",
-	"name": "BiggerStacks",
-	"description": "Increase the arbetrary cap on max_stack_count and count from 99 to 2048",
+	"name": "DataDrivenStacks",
+	"description": "Makes max_stack_size data-driven. Increases the max_stack_size cap from 99 to 2048",
 	"authors": [
 		"HydraHeadHunter",
 		"7410"
@@ -13,23 +13,23 @@
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/bigger-stacks/icon.png",
+	"icon": "assets/data-stacks/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"hydraheadhunter.bigstacks.BiggerStacks"
+			"hydraheadhunter.datastacks.DataDrivenStacks"
 		],
 		"client": [
-			"hydraheadhunter.bigstacks.BiggerStacksClient"
+			"hydraheadhunter.datastacks.DataStacksClient"
 		],
 		"fabric-datagen": [
-			"hydraheadhunter.bigstacks.BiggerStacksDataGenerator"
+			"hydraheadhunter.datastacks.DataStacksDataGenerator"
 		]
 	},
 	"mixins": [
-		"bigger-stacks.mixins.json",
+		"data-stacks.mixins.json",
 		{
-			"config": "bigger-stacks.client.mixins.json",
+			"config": "data-stacks.client.mixins.json",
 			"environment": "client"
 		}
 	],

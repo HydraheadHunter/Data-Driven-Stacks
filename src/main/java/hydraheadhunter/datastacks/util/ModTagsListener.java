@@ -1,17 +1,14 @@
-package hydraheadhunter.bigstacks.util;
+package hydraheadhunter.datastacks.util;
 
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 
 
 import java.io.InputStream;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
-import static hydraheadhunter.bigstacks.BiggerStacks.MOD_ID;
-import static hydraheadhunter.bigstacks.BiggerStacks.LOGGER;
+import static hydraheadhunter.datastacks.DataDrivenStacks.*;
 
 public class ModTagsListener implements SimpleSynchronousResourceReloadListener {
 	public  final String path;
@@ -42,4 +39,5 @@ public class ModTagsListener implements SimpleSynchronousResourceReloadListener 
 			}
 		}
 	};
-}
+	
+	}
