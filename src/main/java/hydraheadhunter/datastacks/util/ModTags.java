@@ -1,6 +1,5 @@
 package hydraheadhunter.datastacks.util;
 
-
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
@@ -8,8 +7,6 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 
-
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
