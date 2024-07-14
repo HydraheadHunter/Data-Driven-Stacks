@@ -71,10 +71,6 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 		}
 	}
 	
-	
-	
-	
-	
 	@Unique
 	private void ChangeStackSize(ItemStack stack, int target){
 		if ( MaxStackSizeMayChange(stack,target) && MaxStackSizeNeedsChanged(stack,target) )
