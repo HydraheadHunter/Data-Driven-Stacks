@@ -3,7 +3,7 @@
 	"package": "hydraheadhunter.datastacks.mixin.client",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"ExampleClientMixin"
+      "DrawContextMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

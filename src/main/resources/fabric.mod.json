@@ -13,7 +13,7 @@
 		"sources": "https://github.com/HydraheadHunter/Data-Driven-Stacks"
 	},
 	"license": "CC-BY-NC-SA 4.0",
-	"icon": "assets/data-stacks/icon.png",
+	"icon": "assets/data_stacks/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
