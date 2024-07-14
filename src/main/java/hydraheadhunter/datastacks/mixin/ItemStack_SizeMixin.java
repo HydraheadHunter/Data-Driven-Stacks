@@ -3,7 +3,9 @@ package hydraheadhunter.datastacks.mixin;
 import hydraheadhunter.datastacks.util.ModTags;
 import net.fabricmc.fabric.api.item.v1.FabricItemStack;
 import net.minecraft.component.*;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.tag.TagKey;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -12,7 +14,9 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import static hydraheadhunter.datastacks.DataDrivenStacks.DEBUGGING;
 import static hydraheadhunter.datastacks.DataDrivenStacks.MAX_STACK_SIZE_CAP;
 
 @Mixin(ItemStack.class)
@@ -24,27 +28,21 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 	}
 	
 	@Inject(method="getMaxCount", at = @At("HEAD"))
-	private void updateMaxStackSizeWithTag(CallbackInfoReturnable<Integer> cir){
-		ItemStack thisAsStack = (ItemStack)(Object) this;
-		ModTags.Items.STACK_SIZES.entrySet().stream()
-		.filter(entry -> thisAsStack.isIn(entry.getValue()))
-		.findFirst()
-		.map(Map.Entry::getKey)
-		.ifPresentOrElse(stackSize -> ChangeStackSize(thisAsStack, stackSize), ItemStack_SizeMixin::dummy);
-	
-/*		if      ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_2048)) ChangeStackSize(thisAsStack, 2048 );
-		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_1024)) ChangeStackSize(thisAsStack, 1024 );
-		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_512 )) ChangeStackSize(thisAsStack,  512 );
-		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_256 )) ChangeStackSize(thisAsStack,  256 );
-		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_128 )) ChangeStackSize(thisAsStack,  128 );
-		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_64  )) ChangeStackSize(thisAsStack,   64 );
-		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_32  )) ChangeStackSize(thisAsStack,   32 );
-		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_16  )) ChangeStackSize(thisAsStack,   16 );
-		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_8   )) ChangeStackSize(thisAsStack,    8 );
-		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_4   )) ChangeStackSize(thisAsStack,    4 );
-		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_2   )) ChangeStackSize(thisAsStack,    2 );
-		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_1   )) ChangeStackSize(thisAsStack,    1 );
-*/
+	private void updateMaxStackSizeWithTag(CallbackInfoReturnable<Integer> cir) {
+		ItemStack thisAsStack = (ItemStack) (Object) this;
+		
+		if (DEBUGGING && thisAsStack.getItem().getName().getString().equals("Grass Block") ) {
+			List<Map.Entry<Integer, TagKey<Item>>> setFilteredStream =
+		
+			ModTags.Items.STACK_SIZES.entrySet().stream()
+			.filter(entry -> thisAsStack.isIn(entry.getValue())).toList();
+			
+			if (setFilteredStream.isEmpty()) return;
+			
+			Map.Entry<Integer, TagKey<Item>> entry = setFilteredStream.getLast();
+			ChangeMaxStackSize(thisAsStack, entry.getKey());
+		}
+		
 	}
 	
 	@Inject(method="areItemsAndComponentsEqual", at= @At("TAIL"), cancellable = true)
@@ -77,7 +75,7 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 	}
 	
 	@Unique
-	private void ChangeStackSize(ItemStack stack, int target){
+	private void ChangeMaxStackSize(ItemStack stack, int target){
 		if ( MaxStackSizeMayChange(stack,target) && MaxStackSizeNeedsChanged(stack,target) )
 			stack.set(DataComponentTypes.MAX_STACK_SIZE, target);
 	}
@@ -105,5 +103,5 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 	}
 	
 	@Unique
-	private static void dummy(){}
+	private static void dummy(){ int test_1 = 0; }
 }
