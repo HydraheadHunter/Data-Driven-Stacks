@@ -6,7 +6,7 @@
 	"description": "Makes max_stack_size data-driven. Increases the max_stack_size cap from 99 to 2048",
 	"authors": [
 		"HydraHeadHunter",
-		"7410"
+		"With special thanks to:", "7410", "QBrute"
 	],
 	"contact": {
 		"homepage": "https://modrinth.com/mod/data-driven-stack-sizes",
