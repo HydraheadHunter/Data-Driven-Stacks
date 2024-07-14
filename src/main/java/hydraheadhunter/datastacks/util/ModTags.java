@@ -10,13 +10,29 @@ import net.minecraft.util.Identifier;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static hydraheadhunter.datastacks.DataDrivenStacks.MOD_ID;
 
 public class ModTags {
 	public static class Items {
-		public static final ArrayList<TagKey<Item>> STACK_SIZE_TAGS = new ArrayList<>();
+		private static final Integer MAX_POWER_OF_TWO = 11;
+		public static final Map<Integer, TagKey<Item>> STACK_SIZES;
 		
+		static {
+			Map<Integer, TagKey<Item>> tmpMap = new HashMap<>();
+			for(int ii = 0; ii <= MAX_POWER_OF_TWO; ii+=1) {
+				int stackSize = 1 << ii;
+				String tagName = "stack_size_" + ii;
+				tmpMap.put(stackSize, createTag(tagName));
+				addReloadListener(tagName);
+			}
+			STACK_SIZES = Collections.unmodifiableMap(tmpMap);
+		}
+		
+		/*
 		public static final TagKey<Item> IS_STACK_SIZE_1		= createTag("stack_size_1"	);
 		public static final TagKey<Item> IS_STACK_SIZE_2		= createTag("stack_size_2"	);
 		public static final TagKey<Item> IS_STACK_SIZE_4		= createTag("stack_size_4"	);
@@ -29,7 +45,7 @@ public class ModTags {
 		public static final TagKey<Item> IS_STACK_SIZE_512	= createTag("stack_size_512"	);
 		public static final TagKey<Item> IS_STACK_SIZE_1024	= createTag("stack_size_1024"	);
 		public static final TagKey<Item> IS_STACK_SIZE_2048	= createTag("stack_size_2048"	);
-		
+		*/
 		public static TagKey<Item> createTag(String name){
 			return TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, name));
 			

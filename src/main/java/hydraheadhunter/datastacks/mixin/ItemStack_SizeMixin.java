@@ -26,8 +26,13 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 	@Inject(method="getMaxCount", at = @At("HEAD"))
 	private void updateMaxStackSizeWithTag(CallbackInfoReturnable<Integer> cir){
 		ItemStack thisAsStack = (ItemStack)(Object) this;
-		
-		if      ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_2048)) ChangeStackSize(thisAsStack, 2048 );
+		ModTags.Items.STACK_SIZES.entrySet().stream()
+		.filter(entry -> thisAsStack.isIn(entry.getValue()))
+		.findFirst()
+		.map(Map.Entry::getKey)
+		.ifPresentOrElse(stackSize -> ChangeStackSize(thisAsStack, stackSize), ItemStack_SizeMixin::dummy);
+	
+/*		if      ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_2048)) ChangeStackSize(thisAsStack, 2048 );
 		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_1024)) ChangeStackSize(thisAsStack, 1024 );
 		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_512 )) ChangeStackSize(thisAsStack,  512 );
 		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_256 )) ChangeStackSize(thisAsStack,  256 );
@@ -39,7 +44,7 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_4   )) ChangeStackSize(thisAsStack,    4 );
 		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_2   )) ChangeStackSize(thisAsStack,    2 );
 		else if ( thisAsStack.isIn(ModTags.Items.IS_STACK_SIZE_1   )) ChangeStackSize(thisAsStack,    1 );
-		
+*/
 	}
 	
 	@Inject(method="areItemsAndComponentsEqual", at= @At("TAIL"), cancellable = true)
@@ -98,4 +103,7 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 	private static int getUnalteredMaxCount(ItemStack stack){
 		return stack.getOrDefault(DataComponentTypes.MAX_STACK_SIZE, 1);
 	}
+	
+	@Unique
+	private static void dummy(){}
 }
