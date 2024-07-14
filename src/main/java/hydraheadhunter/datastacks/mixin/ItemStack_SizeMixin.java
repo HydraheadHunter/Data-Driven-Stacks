@@ -31,17 +31,16 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 	private void updateMaxStackSizeWithTag(CallbackInfoReturnable<Integer> cir) {
 		ItemStack thisAsStack = (ItemStack) (Object) this;
 		
-		if (DEBUGGING && thisAsStack.getItem().getName().getString().equals("Grass Block")) {
-			List<Map.Entry<Integer, TagKey<Item>>> setFilteredStream =
-			
-			ModTags.Items.STACK_SIZES.entrySet().stream()
-			.filter(entry -> thisAsStack.isIn(entry.getValue())).toList();
-			
-			if (setFilteredStream.isEmpty()) return;
-			
-			Map.Entry<Integer, TagKey<Item>> entry = setFilteredStream.getLast();
-			ChangeMaxStackSize(thisAsStack, entry.getKey());
-		}
+		List<Map.Entry<Integer, TagKey<Item>>> setFilteredStream =
+		
+		ModTags.Items.STACK_SIZES.entrySet().stream()
+		.filter(entry -> thisAsStack.isIn(entry.getValue())).toList();
+		
+		if (setFilteredStream.isEmpty()) return;
+		
+		Map.Entry<Integer, TagKey<Item>> entry = setFilteredStream.getLast();
+		ChangeMaxStackSize(thisAsStack, entry.getKey());
+		
 		
 	}
 	
