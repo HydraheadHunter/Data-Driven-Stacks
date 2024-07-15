@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 public class DataDrivenStacks implements ModInitializer {
 	public static final String MOD_ID = "data_stacks";
 	public static final int MAX_STACK_SIZE_CAP = 2048;
+	public static final boolean SMALLER_STACK_FULL_SHULKERS = true;
+	
 	public static final boolean DEBUGGING = false;
 	
 	// This logger is used to write text to the console and the log file.
