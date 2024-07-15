@@ -11,33 +11,39 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.TagKey;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.*;
 
+import static hydraheadhunter.datastacks.DataDrivenStacks.SMALLER_STACK_FULL_SHULKERS;
 import static hydraheadhunter.datastacks.DataDrivenStacks.MAX_STACK_SIZE_CAP;
+import static java.lang.String.valueOf;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItemStack {
+	
+	@Shadow public abstract ItemStack copyWithCount(int count);
 	
 	@ModifyArg(method = "method_57371", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/dynamic/Codecs;rangedInt(II)Lcom/mojang/serialization/Codec;"), index = 1)
 	private static int changeMaxStackSizeLimit(int original) {
 		return MAX_STACK_SIZE_CAP;
 	}
 	
+	
 	@Inject(method = "getMaxCount", at = @At("HEAD"))
 	private void updateMaxStackSizeWithTag(CallbackInfoReturnable<Integer> cir) {
 		ItemStack thisAsStack = (ItemStack) (Object) this;
+		
 		Map.Entry<Integer, TagKey<Item>> entry;
 		if( blockIsIn(thisAsStack, BlockTags.SHULKER_BOXES)){
 			ContainerComponent contents = thisAsStack.getComponents().getOrDefault(DataComponentTypes.CONTAINER, null);
-		//	entry = findEntry(thisAsStack, contents.stream().count() == 0 );
-			entry = null;
+			ContainerComponent emptyContents= ContainerComponent.DEFAULT;
+			entry = findEntry(thisAsStack, !(SMALLER_STACK_FULL_SHULKERS ^ emptyContents.equals(contents)) ); //xnor
 		}
 		else {
 			entry = findEntry(thisAsStack, true);
@@ -49,14 +55,24 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 		
 	}
 	
+	@Inject(method = "areItemsAndComponentsEqual", at = @At("HEAD"), cancellable = true)
+	private static void testIfMethodBeingInjected(ItemStack stack, ItemStack otherStack, CallbackInfoReturnable<Boolean> cir) {
+	/*	if (stack.isOf(Items.WHITE_SHULKER_BOX)  && otherStack.isOf(Items.WHITE_SHULKER_BOX) ){
+			if (stack.getCount() != otherStack.getCount() ) {
+				System.out.println(valueOf(stack.getCount()) + ", " + valueOf(otherStack.getCount()));
+				ContainerComponent contents1 =      stack.getComponents().getOrDefault(DataComponentTypes.CONTAINER, null);
+				ContainerComponent contents2 = otherStack.getComponents().getOrDefault(DataComponentTypes.CONTAINER, null);
+				if (contents1.equals(contents2)) return;
+				int test1 = 0;
+			}
+		}
+	*/
+	}
+	
 	@Inject(method = "areItemsAndComponentsEqual", at = @At("TAIL"), cancellable = true)
 	private static void areItemAndComponentsBarMaxStackSizeEqual(ItemStack stack, ItemStack otherStack, CallbackInfoReturnable<Boolean> cir) {
-		if (stack.getCount() != otherStack.getCount())
-		{
-			
-			int test= 1;
-		}
-		if (cir.getReturnValue()) cir.setReturnValue(true);
+		if (cir.getReturnValue()) {cir.setReturnValue(true); return; }
+		if ( blockIsIn(stack, BlockTags.SHULKER_BOXES) &&  ! compareContainerContents(stack, otherStack)) { cir.setReturnValue(false); return; }
 		
 		int maxCountA = getUnalteredMaxCount(stack);
 		int maxCountB = getUnalteredMaxCount(otherStack);
@@ -67,9 +83,7 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 			int maxCount1 = AgtB ? maxCountA : maxCountB;
 			int maxCount2 = AgtB ? maxCountB : maxCountA;
 			
-			if (stack2.getCount() >= maxCount2) {
-				cir.setReturnValue(false);
-			}
+			if (stack2.getCount() >= maxCount2) { cir.setReturnValue(false); return; }
 			
 			Set<ComponentType<?>> stackComponents1 = stack1.getComponents().getTypes();
 			Set<ComponentType<?>> stackComponents2 = stack2.getComponents().getTypes();
@@ -86,6 +100,12 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 		}
 	}
 	
+	private static boolean compareContainerContents(ItemStack stack1, ItemStack stack2) {
+		ContainerComponent contents1 = stack1.getComponents().getOrDefault(DataComponentTypes.CONTAINER, null);
+		ContainerComponent contents2 = stack2.getComponents().getOrDefault(DataComponentTypes.CONTAINER, null);
+		return contents1.equals(contents2);
+	}
+	
 	@Unique
 	private Map.Entry<Integer, TagKey<Item>> findEntry(ItemStack stack, boolean findLast){
 		List<Map.Entry<Integer, TagKey<Item>>> setFilteredStream =
@@ -95,6 +115,7 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 		if (setFilteredStream.isEmpty()) return null;
 		return findLast? setFilteredStream.getLast(): setFilteredStream.getFirst();
 	}
+	
 	@Unique
 	private void ChangeMaxStackSize(ItemStack stack, int target) {
 		if (MaxStackSizeMayChange(stack, target) && MaxStackSizeNeedsChanged(stack, target))
