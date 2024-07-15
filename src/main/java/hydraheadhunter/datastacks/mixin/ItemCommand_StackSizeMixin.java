@@ -10,7 +10,6 @@ import static hydraheadhunter.datastacks.DataDrivenStacks.MAX_STACK_SIZE_CAP;
 @Mixin(ItemCommand.class)
 public abstract class ItemCommand_StackSizeMixin {
 	
-	
 	@ModifyConstant( method = "register", constant = @Constant(intValue = 99))
 	private static int changeMaxStackSizeLimit(int original) {
 		return MAX_STACK_SIZE_CAP;

@@ -22,7 +22,7 @@ public class ModTags {
 			Map<Integer, TagKey<Item>> tmpMap = new HashMap<>();
 			for(int ii = 1;  ii <= MAX_STACK_SIZE_CAP; ii+=1) {
 				int stackSize = /*1 <<*/ ii;
-				String tagName = "stack_size_" + stackSize;
+				String tagName = "max_stack_size_" + stackSize;
 				tmpMap.put(stackSize, createTag(tagName));
 				addReloadListener(tagName);
 			}

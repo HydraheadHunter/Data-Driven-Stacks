@@ -6,7 +6,8 @@
 		"DataComponentTypesMixin",
 		"ItemStack_SizeMixin",
 		"Inventory_StackSizeMixin",
-		"ItemCommand_StackSizeMixin"
+		"ItemCommand_StackSizeMixin",
+		"ScreenHandler_TestCaseFinderMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
