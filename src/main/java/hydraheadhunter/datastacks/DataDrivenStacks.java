@@ -1,7 +1,9 @@
 package hydraheadhunter.datastacks;
 
+import hydraheadhunter.datastacks.command.GiveStackCommand;
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +27,8 @@ public class DataDrivenStacks implements ModInitializer {
 		// Proceed with mild caution.
 		LOGGER.info("Increasing `max_stack_size` cap.");
 		LOGGER.info("Implementing Data-Driven max_stack_size");
+		
+		CommandRegistrationCallback.EVENT.register(GiveStackCommand::register);
 		
 	}
 
