@@ -20,6 +20,7 @@ import java.util.List;
 
 @Mixin(PlayerInventory.class)
 public abstract class PlayerInventoryMixin {
+	/*
 	@Shadow @Final public PlayerEntity player;
 	@Shadow @Final private List<DefaultedList<ItemStack>> combinedInventory;
 	

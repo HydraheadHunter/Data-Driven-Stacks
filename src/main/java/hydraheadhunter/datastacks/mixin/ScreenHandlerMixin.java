@@ -26,7 +26,7 @@ import java.lang.reflect.Method;
 
 @Mixin(ScreenHandler.class)
 public abstract class ScreenHandlerMixin {
-	@Shadow DefaultedList<Slot> slots;
+	/*@Shadow DefaultedList<Slot> slots;
 	@Shadow @Final private static Logger LOGGER;
 	
 	private static final String PLAYER_INVENTORY_STRING 		= "class net.minecraft.entity.player.PlayerInventory"			;
@@ -66,8 +66,8 @@ public abstract class ScreenHandlerMixin {
 		Entity entityToSet;
 		
 		switch(classString){
-			case PLAYER_INVENTORY_STRING	: case ENDERCHEST_INVENTORY		: 	/*LOGGER.info("PlayerInventory");*/ 	break;
-			case CRAFTING_INVENTORY		: case CRAFTING_RESULT_INVENTORY	:	/*LOGGER.info("CraftingInventory")*/	break;
+			case PLAYER_INVENTORY_STRING	: case ENDERCHEST_INVENTORY		: 	/*LOGGER.info("PlayerInventory");  / 	break;
+			case CRAFTING_INVENTORY		: case CRAFTING_RESULT_INVENTORY	:	/*LOGGER.info("CraftingInventory") /	break;
 			
 			case MC_CHEST_INVENTORY		: case CHEST_BOAT_INVENTORY		:
 			case DOUBLE_INVENTORY		: case CHEST_BLOCK_INVENTORY		:
@@ -98,6 +98,6 @@ public abstract class ScreenHandlerMixin {
 	}
 	
 	
-	
+	*/
 }
 

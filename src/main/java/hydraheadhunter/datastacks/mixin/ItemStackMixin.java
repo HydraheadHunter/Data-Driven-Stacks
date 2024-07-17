@@ -55,18 +55,18 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 			if (holder instanceof VillagerEntity) {
 				findGreatestValue = itemIsIn(thisAsStack, ModTags.Items.VILLAGER_LESS);
 			}
-			if (holder instanceof PlayerEntity) {
+			/*if (holder instanceof PlayerEntity) {
 				int test = 0;
 				if ( itemIsIn(thisAsStack, ModTags.Items.PLAYER_MORE) )
 					findGreatestValue= true;
 				else
 					findGreatestValue = ! itemIsIn(thisAsStack, ModTags.Items.PLAYER_LESS);
-			}
+			}*/
 		}
 		else {
 			findGreatestValue = ! (
-				itemIsIn(thisAsStack, ModTags.Items.VILLAGER_MORE) ||
-				itemIsIn(thisAsStack, ModTags.Items.PLAYER_MORE  )
+				itemIsIn(thisAsStack, ModTags.Items.VILLAGER_MORE) // ||
+				// itemIsIn(thisAsStack, ModTags.Items.PLAYER_MORE  )
 			);
 		}
 		
