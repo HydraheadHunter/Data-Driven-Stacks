@@ -1,6 +1,7 @@
 package hydraheadhunter.datastacks.mixin;
 
 import hydraheadhunter.datastacks.util.ModTags;
+import hydraheadhunter.datastacks.util.iItemStackMixin;
 import net.fabricmc.fabric.api.item.v1.FabricItemStack;
 import net.minecraft.block.Block;
 import net.minecraft.component.*;
@@ -10,9 +11,11 @@ import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.TagKey;
+import net.minecraft.util.Hand;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -27,13 +30,14 @@ import static hydraheadhunter.datastacks.DataDrivenStacks.*;
 import static java.lang.String.valueOf;
 
 @Mixin(ItemStack.class)
-public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItemStack {
+public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack, iItemStackMixin {
 	
 	@Shadow public abstract ItemStack copyWithCount(int count);
+	private static Class<?> inventoryType;
+	private static Class<?> entityType;
 	
 	@ModifyArg(method = "method_57371", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/dynamic/Codecs;rangedInt(II)Lcom/mojang/serialization/Codec;"), index = 1)
 	private static int changeMaxStackSizeLimit(int original) { return MAX_STACK_SIZE_CAP; }
-	
 	
 	@Inject(method = "getMaxCount", at = @At("HEAD"))
 	private void updateMaxStackSizeWithTag(CallbackInfoReturnable<Integer> cir) {
@@ -168,4 +172,10 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 	private static boolean blockIsIn(ItemStack stack, TagKey<Block> tag) {
 		return stack.getItem() instanceof BlockItem && (((BlockItem) stack.getItem()).getBlock().getDefaultState()).isIn(tag);
 	}
+
+	public void setInventoryType( Class<?> inventoryType){
+	
+	}
+	
+	
 }

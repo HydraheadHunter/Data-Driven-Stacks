@@ -53,6 +53,6 @@ public abstract class PlayerInventoryMixin {
 		cir.setReturnValue(item);
 	}
 */
-	
+
 }
 

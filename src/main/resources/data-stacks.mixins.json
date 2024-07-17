@@ -4,12 +4,13 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"DataComponentTypesMixin",
-		"ItemStack_SizeMixin",
+      "ItemStackMixin",
 		"Inventory_StackSizeMixin",
 		"ItemCommand_StackSizeMixin",
 		"MerchantEntityMixin",
 		"PlayerInventoryMixin",
-		"InventoryChangedCriterionMixin"
+		"InventoryChangedCriterionMixin",
+		"ScreenHandlerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

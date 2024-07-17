@@ -22,7 +22,7 @@ public abstract class InventoryChangedCriterionMixin {
 	@Inject(method="trigger", at= @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;getMaxCount()I"))
 	private void injectTrigger(ServerPlayerEntity player, PlayerInventory inventory, ItemStack stack, CallbackInfo info, @Local(ordinal=1) ItemStack itemStack) {
 		itemStack.setHolder(inventory.player);
-		LOGGER.info("injectTrigger");
+		//LOGGER.info("injectTrigger");
 	}
 
 }
