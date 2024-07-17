@@ -15,7 +15,14 @@ import static hydraheadhunter.datastacks.DataDrivenStacks.MAX_STACK_SIZE_CAP;
 import static hydraheadhunter.datastacks.DataDrivenStacks.MOD_ID;
 
 public class ModTags {
+	
 	public static class Items {
+		
+		public static final TagKey<Item> VILLAGER_LESS = createTag("entity/villagers_stack_less");
+		public static final TagKey<Item> VILLAGER_MORE = createTag("entity/villagers_stack_more");
+		public static final TagKey<Item> PLAYER_LESS   = createTag("entity/players_stack_less");
+		public static final TagKey<Item> PLAYER_MORE   = createTag("entity/players_stack_more");
+		
 		public static final Map<Integer, TagKey<Item>> STACK_SIZES;
 		
 		static {
@@ -29,28 +36,16 @@ public class ModTags {
 			STACK_SIZES = Collections.unmodifiableMap(tmpMap);
 		}
 		
-		public static TagKey<Item> createTag(String name){
-			return TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, name));
-			
-		}
+		public static TagKey<Item> createTag(String name){ return TagKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, name));	}
 		
-		static {
-			addReloadListeners();
+		static {	addReloadListeners();
 		}
 		
 		public static void addReloadListeners(){
-			addReloadListener("stack_size_1"   );
-			addReloadListener("stack_size_2"   );
-			addReloadListener("stack_size_4"   );
-			addReloadListener("stack_size_8"   );
-			addReloadListener("stack_size_16"  );
-			addReloadListener("stack_size_32"  );
-			addReloadListener("stack_size_64"  );
-			addReloadListener("stack_size_128" );
-			addReloadListener("stack_size_256" );
-			addReloadListener("stack_size_512" );
-			addReloadListener("stack_size_1024");
-			addReloadListener("stack_size_2048");
+			addReloadListener( "entity/villagers_stack_less"	);
+			addReloadListener( "entity/villagers_stack_more"	);
+			addReloadListener( "entity/players_stack_less"	);
+			addReloadListener( "entity/players_stack_more"	);
 		}
 		private static void addReloadListener(String path){
 			ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener( new ModTagsListener( path ));

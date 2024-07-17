@@ -5,6 +5,9 @@ import net.fabricmc.fabric.api.item.v1.FabricItemStack;
 import net.minecraft.block.Block;
 import net.minecraft.component.*;
 import net.minecraft.component.type.ContainerComponent;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -20,8 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.*;
 
-import static hydraheadhunter.datastacks.DataDrivenStacks.SMALLER_STACK_FULL_SHULKERS;
-import static hydraheadhunter.datastacks.DataDrivenStacks.MAX_STACK_SIZE_CAP;
+import static hydraheadhunter.datastacks.DataDrivenStacks.*;
 import static java.lang.String.valueOf;
 
 @Mixin(ItemStack.class)
@@ -30,29 +32,45 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 	@Shadow public abstract ItemStack copyWithCount(int count);
 	
 	@ModifyArg(method = "method_57371", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/dynamic/Codecs;rangedInt(II)Lcom/mojang/serialization/Codec;"), index = 1)
-	private static int changeMaxStackSizeLimit(int original) {
-		return MAX_STACK_SIZE_CAP;
-	}
+	private static int changeMaxStackSizeLimit(int original) { return MAX_STACK_SIZE_CAP; }
 	
 	
 	@Inject(method = "getMaxCount", at = @At("HEAD"))
 	private void updateMaxStackSizeWithTag(CallbackInfoReturnable<Integer> cir) {
 		ItemStack thisAsStack = (ItemStack) (Object) this;
+		Entity holder= thisAsStack.getHolder();
 		
-		Map.Entry<Integer, TagKey<Item>> entry;
+		Map.Entry<Integer, TagKey<Item>> entry = null;
+		boolean findGreatestValue = true;
 		if( blockIsIn(thisAsStack, BlockTags.SHULKER_BOXES)){
 			ContainerComponent contents = thisAsStack.getComponents().getOrDefault(DataComponentTypes.CONTAINER, null);
 			ContainerComponent emptyContents= ContainerComponent.DEFAULT;
-			entry = findEntry(thisAsStack, !(SMALLER_STACK_FULL_SHULKERS ^ emptyContents.equals(contents)) ); //xnor
+			findGreatestValue = !(SMALLER_STACK_FULL_SHULKERS ^ emptyContents.equals(contents)) ; //xnor
+		}
+		else if (holder != null) {
+			if (holder instanceof VillagerEntity) {
+				findGreatestValue = itemIsIn(thisAsStack, ModTags.Items.VILLAGER_LESS);
+			}
+			if (holder instanceof PlayerEntity) {
+				int test = 0;
+				if ( itemIsIn(thisAsStack, ModTags.Items.PLAYER_MORE) )
+					findGreatestValue= true;
+				else
+					findGreatestValue = ! itemIsIn(thisAsStack, ModTags.Items.PLAYER_LESS);
+			}
 		}
 		else {
-			entry = findEntry(thisAsStack, true);
+			findGreatestValue = ! (
+				itemIsIn(thisAsStack, ModTags.Items.VILLAGER_MORE) ||
+				itemIsIn(thisAsStack, ModTags.Items.PLAYER_MORE  )
+			);
 		}
+		
+		entry= findEntry(thisAsStack, findGreatestValue);
 		if (entry == null) return;
 		
 		ChangeMaxStackSize(thisAsStack, entry.getKey());
-		
-		
+	
 	}
 	
 	@Inject(method = "areItemsAndComponentsEqual", at = @At("HEAD"), cancellable = true)
@@ -68,7 +86,6 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 		}
 	*/
 	}
-	
 	@Inject(method = "areItemsAndComponentsEqual", at = @At("TAIL"), cancellable = true)
 	private static void areItemAndComponentsBarMaxStackSizeEqual(ItemStack stack, ItemStack otherStack, CallbackInfoReturnable<Boolean> cir) {
 		if (cir.getReturnValue()) {cir.setReturnValue(true); return; }
@@ -107,13 +124,13 @@ public abstract class ItemStack_SizeMixin implements ComponentHolder, FabricItem
 	}
 	
 	@Unique
-	private Map.Entry<Integer, TagKey<Item>> findEntry(ItemStack stack, boolean findLast){
+	private Map.Entry<Integer, TagKey<Item>> findEntry(ItemStack stack, boolean findGreatestValue){
 		List<Map.Entry<Integer, TagKey<Item>>> setFilteredStream =
 		ModTags.Items.STACK_SIZES.entrySet().stream()
 		.filter(entry -> itemIsIn(stack, entry.getValue())).toList();
 		
 		if (setFilteredStream.isEmpty()) return null;
-		return findLast? setFilteredStream.getLast(): setFilteredStream.getFirst();
+		return findGreatestValue ? setFilteredStream.getLast(): setFilteredStream.getFirst();
 	}
 	
 	@Unique

@@ -7,7 +7,9 @@
 		"ItemStack_SizeMixin",
 		"Inventory_StackSizeMixin",
 		"ItemCommand_StackSizeMixin",
-		"ScreenHandler_TestCaseFinderMixin"
+		"MerchantEntityMixin",
+		"PlayerInventoryMixin",
+		"InventoryChangedCriterionMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
