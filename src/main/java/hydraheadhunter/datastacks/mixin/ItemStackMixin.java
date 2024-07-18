@@ -33,12 +33,8 @@ import static java.lang.String.valueOf;
 public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack, iItemStackMixin {
 	
 	@Shadow public abstract ItemStack copyWithCount(int count);
-	private int targetStackSize;
 	private static Class<?> inventoryType;
 	private static Class<?> entityType;
-	
-	@ModifyArg(method = "method_57371", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/dynamic/Codecs;rangedInt(II)Lcom/mojang/serialization/Codec;"), index = 1)
-	private static int changeMaxStackSizeLimit(int original) { return MAX_STACK_SIZE_CAP; }
 	
 	@Inject(method = "getMaxCount", at = @At("HEAD"))
 	private void updateMaxStackSizeWithTag(CallbackInfoReturnable<Integer> cir) {
@@ -56,13 +52,13 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 			if (holder instanceof VillagerEntity) {
 				findGreatestValue = ! itemIsIn(thisAsStack, ModTags.Items.VILLAGER_LESS);
 			}
-			/*if (holder instanceof PlayerEntity) {
-				int test = 0;
+/*			if (holder instanceof PlayerEntity) {
+
 				if ( itemIsIn(thisAsStack, ModTags.Items.PLAYER_MORE) )
 					findGreatestValue= true;
 				else
 					findGreatestValue = ! itemIsIn(thisAsStack, ModTags.Items.PLAYER_LESS);
-			}*/
+			}//*/
 		}
 		else {
 			findGreatestValue = ! (
@@ -74,6 +70,7 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 		entry= findEntry(thisAsStack, findGreatestValue);
 		if (entry == null) return;
 		
+		//targetStackSize=entry.getKey();
 		ChangeMaxStackSize(thisAsStack, entry.getKey());
 	
 	}

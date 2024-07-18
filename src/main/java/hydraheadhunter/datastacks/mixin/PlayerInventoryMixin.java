@@ -20,11 +20,9 @@ import java.util.List;
 
 @Mixin(PlayerInventory.class)
 public abstract class PlayerInventoryMixin {
-	/*
+/*
 	@Shadow @Final public PlayerEntity player;
 	@Shadow @Final private List<DefaultedList<ItemStack>> combinedInventory;
-	
-	
 	
 	@ModifyArg(method = "canStackAddMore",  at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;getMaxCount(Lnet/minecraft/item/ItemStack;)I"), index = 0)
 	private ItemStack addPlayerHolder_1 (ItemStack stack) {
@@ -42,7 +40,7 @@ public abstract class PlayerInventoryMixin {
 	private void addPlayerHolder_3( ItemStack stack, boolean notifiesClient, CallbackInfo info){
 		stack.setHolder(player);
 	}
-/*
+
 	@Inject(method= "getStack", at= @At("TAIL"), cancellable = true )
 	private void injectGetStack( int slot, CallbackInfoReturnable cir, @Local List<ItemStack> list){
 		if (list == null) return;
@@ -53,7 +51,7 @@ public abstract class PlayerInventoryMixin {
 		item.setHolder(player);
 		cir.setReturnValue(item);
 	}
-*/
+//*/
 
 }
 

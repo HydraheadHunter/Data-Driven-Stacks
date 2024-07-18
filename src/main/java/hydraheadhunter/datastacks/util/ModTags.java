@@ -20,10 +20,10 @@ public class ModTags {
 		
 		public static final TagKey<Item> VILLAGER_LESS = createTag("entity/villagers_stack_less");
 		public static final TagKey<Item> VILLAGER_MORE = createTag("entity/villagers_stack_more");
-		/*
+		
 		public static final TagKey<Item> PLAYER_LESS   = createTag("entity/players_stack_less");
 		public static final TagKey<Item> PLAYER_MORE   = createTag("entity/players_stack_more");
-		*/
+		
 		public static final Map<Integer, TagKey<Item>> STACK_SIZES;
 		
 		static {
@@ -45,8 +45,8 @@ public class ModTags {
 		public static void addReloadListeners(){
 			addReloadListener( "entity/villagers_stack_less"	);
 			addReloadListener( "entity/villagers_stack_more"	);
-	//		addReloadListener( "entity/players_stack_less"	);
-	//		addReloadListener( "entity/players_stack_more"	);
+			addReloadListener( "entity/players_stack_less"	);
+			addReloadListener( "entity/players_stack_more"	);
 		}
 		private static void addReloadListener(String path){
 			ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener( new ModTagsListener( path ));

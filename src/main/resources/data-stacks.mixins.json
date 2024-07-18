@@ -3,11 +3,14 @@
 	"package": "hydraheadhunter.datastacks.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"DataComponentTypesMixin",
-      "ItemStackMixin",
-		"Inventory_StackSizeMixin",
-		"ItemCommand_StackSizeMixin",
-		"MerchantEntityMixin",
+		"override_cap.InventoryMixin",
+		"override_cap.DataComponentTypeMixin",
+		"override_cap.ItemCommandMixin",
+		"override_cap.ItemStackMixin",
+
+        "ItemStackMixin",
+		"EntityPickUpItemsMixin",
+
 		"PlayerInventoryMixin",
 		"InventoryChangedCriterionMixin",
 		"ScreenHandlerMixin"
