@@ -7,9 +7,10 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+
+import static hydraheadhunter.datastacks.util.common.createDummyStack;
 
 
 @Mixin(InventoryOwner.class)
@@ -39,7 +40,6 @@ public interface EntityPickUpItemsMixin {
 	//  Takes one target inventory max_stack_size-worth from the source stack and adds it to the target inventory. Then recurses.
 	//  Returns once the inventory has become full, the source stack has become empty, or recursed 100 times times.
 	private static ItemStack recurse(MobEntity entity, SimpleInventory inventory, ItemStack stack, int recursionCount){
-		
 		//Use a dummy stack to determine the max_stack_size for item if it were in the target inventory
 		ItemStack dummyStack= createDummyStack(stack, entity);
 		int countToAdd= dummyStack.getMaxCount();
@@ -63,13 +63,7 @@ public interface EntityPickUpItemsMixin {
 	}
 	
 	//Creates a copy of the stack except its' holder is the entity argument, it's count is one, and it's max stack size is updated.
-	private static ItemStack createDummyStack(ItemStack stack, MobEntity entity){
-		ItemStack dummyStack= stack.copyWithCount(1);
-		dummyStack.setHolder(entity);
-		dummyStack.getMaxCount();
-		return dummyStack;
-	}
-	
+
 	private static boolean canInsert(MobEntity entity, SimpleInventory inventory, ItemStack sourceStack){
 		boolean toReturn= false;
 		for( ItemStack stack: inventory.heldStacks){

@@ -1,28 +1,23 @@
 package hydraheadhunter.datastacks.mixin;
 
 
-import com.llamalad7.mixinextras.sugar.Local;
-import hydraheadhunter.datastacks.util.iItemStackMixin;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.ChestBlockEntity;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.BlockPos;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.lang.reflect.Method;
+import static hydraheadhunter.datastacks.util.common.createDummyStack;
+import static java.lang.String.valueOf;
+
 
 @Mixin(ScreenHandler.class)
 public abstract class ScreenHandlerMixin {
@@ -96,8 +91,82 @@ public abstract class ScreenHandlerMixin {
 
 		return itemStack;
 	}
-	
-	
 	*/
+	
+	@Shadow public abstract Slot getSlot(int index);
+	
+	@Shadow @Final private static Logger LOGGER;
+	
+	@Shadow @Final public DefaultedList<Slot> slots;
+	
+	@Inject(method="insertItem",at=@At("HEAD"),cancellable = true)
+	protected void injectInsertItem(ItemStack stack, int startIndex, int endIndex, boolean fromLast, CallbackInfoReturnable cir){
+ 		LOGGER.info("inject insertItem");
+		Slot firstSlot = this.getSlot(startIndex);
+		LOGGER.info( firstSlot.inventory.getClass().toString() );
+		if (firstSlot.inventory instanceof PlayerInventory) {
+			
+			PlayerEntity player = (((PlayerInventory) firstSlot.inventory).player);
+			ItemStack dummyStack= createDummyStack(stack,player);
+			int stackSizeDifference= stackSizeDifference( stack, dummyStack);
+			stack.setHolder(player);
+			
+			LOGGER.info( player.getNameForScoreboard() );
+			LOGGER.info( "Stack Size Difference = " + valueOf(stackSizeDifference));
+			if (stackSizeDifference <= 0 ){
+				return;
+			}
+			else {
+				LOGGER.info( "Source Is Larger Than Target Allows: " + stack.getItem().getName());
+				cir.setReturnValue( vanillaStackableCode(stack, startIndex, endIndex, fromLast) );
+				cir.cancel();
+			}
+		}
+		
+		
+		else {
+			stack.setHolder(null);
+			LOGGER.info( "Nulled Out" );
+		}
+		
+	}
+	
+	private int stackSizeDifference( ItemStack sourceStack, ItemStack dummyStack){ return sourceStack.getMaxCount() - dummyStack.getMaxCount(); }
+	
+	private boolean vanillaStackableCode (ItemStack stack, int startIndex, int endIndex, boolean fromLast){
+		boolean toReturn= false;
+		
+		int i = fromLast? endIndex-1: startIndex;
+		
+		if (stack.isStackable()) {
+			while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
+				Slot slot = this.slots.get(i);
+				ItemStack itemStack = slot.getStack();
+				if (!itemStack.isEmpty() && ItemStack.areItemsAndComponentsEqual(stack, itemStack)) {
+					int j = itemStack.getCount() + stack.getCount();
+					int k = slot.getMaxItemCount(itemStack);
+					if (j <= k) {
+						stack.setCount(0);
+						itemStack.setCount(j);
+						slot.markDirty();
+						toReturn = true;
+					} else if (itemStack.getCount() < k) {
+						stack.decrement(k - itemStack.getCount());
+						itemStack.setCount(k);
+						slot.markDirty();
+						toReturn = true;
+					}
+				}
+				
+				if (fromLast) {
+					i--;
+				} else {
+					i++;
+				}
+			}
+		}
+		return toReturn;
+	}
+	
 }
 

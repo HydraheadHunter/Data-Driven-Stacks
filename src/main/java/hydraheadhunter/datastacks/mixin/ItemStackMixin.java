@@ -1,27 +1,26 @@
 package hydraheadhunter.datastacks.mixin;
 
+import hydraheadhunter.datastacks.util.ItemStackInterface;
 import hydraheadhunter.datastacks.util.ModTags;
-import hydraheadhunter.datastacks.util.iItemStackMixin;
 import net.fabricmc.fabric.api.item.v1.FabricItemStack;
 import net.minecraft.block.Block;
 import net.minecraft.component.*;
 import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Hand;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.*;
@@ -30,17 +29,43 @@ import static hydraheadhunter.datastacks.DataDrivenStacks.*;
 import static java.lang.String.valueOf;
 
 @Mixin(ItemStack.class)
-public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack, iItemStackMixin {
+public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack, ItemStackInterface {
 	
 	@Shadow public abstract ItemStack copyWithCount(int count);
-	private static Class<?> inventoryType;
-	private static Class<?> entityType;
+	
+	@Shadow public abstract boolean isEmpty();
+	
+	private EntityType<?> holderType;
+	
+	
+	@Inject(method = "setHolder", at= @At("HEAD"), cancellable = true)
+	private void setHolderType( Entity entity, CallbackInfo info ) {
+		if (entity == null ) {holderType = null; return; }
+		holderType = entity.getType();
+		
+		if ( entity instanceof MobEntity ) {
+			LOGGER.info("SET MOB HOLDER");
+			info.cancel();
+		}
+		else if ( holderType.equals(EntityType.PLAYER) ) {
+		//	LOGGER.info("SET PLAYER HOLDER");
+			info.cancel();
+		}
+		else {
+			LOGGER.info("DIFFERENT TYPE");
+		}
+	}
+	
 	
 	@Inject(method = "getMaxCount", at = @At("HEAD"))
-	private void updateMaxStackSizeWithTag(CallbackInfoReturnable<Integer> cir) {
+	private void overrideMaxCountWithData(CallbackInfoReturnable<Integer> cir) {
+		if (this.isEmpty()) return;
 		ItemStack thisAsStack = (ItemStack) (Object) this;
-		Entity holder= thisAsStack.getHolder();
-		
+
+		boolean hadHolder=false;
+		boolean hadPlayerHolder=false;
+		boolean wasInMore=false;
+		boolean wasInLess=false;
 		Map.Entry<Integer, TagKey<Item>> entry = null;
 		boolean findGreatestValue = true;
 		if( blockIsIn(thisAsStack, BlockTags.SHULKER_BOXES)){
@@ -48,23 +73,30 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 			ContainerComponent emptyContents= ContainerComponent.DEFAULT;
 			findGreatestValue = !(SMALLER_STACK_FULL_SHULKERS ^ emptyContents.equals(contents)) ; //xnor
 		}
-		else if (holder != null) {
-			if (holder instanceof VillagerEntity) {
+		else if (holderType != null) {
+hadHolder=true;
+			if (holderType.equals(EntityType.VILLAGER )) {
 				findGreatestValue = ! itemIsIn(thisAsStack, ModTags.Items.VILLAGER_LESS);
 			}
-/*			if (holder instanceof PlayerEntity) {
-
-				if ( itemIsIn(thisAsStack, ModTags.Items.PLAYER_MORE) )
-					findGreatestValue= true;
-				else
-					findGreatestValue = ! itemIsIn(thisAsStack, ModTags.Items.PLAYER_LESS);
+			if (holderType.equals(EntityType.PLAYER)) {
+hadPlayerHolder=true;
+				if ( itemIsIn(thisAsStack, ModTags.Items.PLAYER_MORE) ) {
+wasInMore = true;
+					findGreatestValue = true;
+				}
+				else {
+					findGreatestValue = !itemIsIn(thisAsStack, ModTags.Items.PLAYER_LESS);
+wasInLess= itemIsIn(thisAsStack,ModTags.Items.PLAYER_LESS);
+				}
 			}//*/
 		}
 		else {
 			findGreatestValue = ! (
-				itemIsIn(thisAsStack, ModTags.Items.VILLAGER_MORE) // ||
-				// itemIsIn(thisAsStack, ModTags.Items.PLAYER_MORE  )
+				itemIsIn(thisAsStack, ModTags.Items.VILLAGER_MORE)  ||
+				itemIsIn(thisAsStack, ModTags.Items.PLAYER_MORE  )
 			);
+wasInMore = itemIsIn(thisAsStack, ModTags.Items.PLAYER_MORE);
+wasInLess = itemIsIn(thisAsStack, ModTags.Items.PLAYER_LESS);
 		}
 		
 		entry= findEntry(thisAsStack, findGreatestValue);
@@ -124,6 +156,15 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 		ContainerComponent contents2 = stack2.getComponents().getOrDefault(DataComponentTypes.CONTAINER, null);
 		return contents1.equals(contents2);
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	@Unique
 	private Map.Entry<Integer, TagKey<Item>> findEntry(ItemStack stack, boolean findGreatestValue){
