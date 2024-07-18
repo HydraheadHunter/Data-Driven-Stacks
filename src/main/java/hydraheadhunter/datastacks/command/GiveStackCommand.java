@@ -7,6 +7,7 @@ import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.ItemStackArgument;
 import net.minecraft.command.argument.ItemStackArgumentType;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.CommandManager;
@@ -14,6 +15,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 
 import java.util.Collection;
@@ -50,9 +52,11 @@ public class GiveStackCommand {
 
 	private static int execute(ServerCommandSource source, ItemStackArgument item, Collection<ServerPlayerEntity> targets, int count) throws CommandSyntaxException {
 		ItemStack itemStack = item.createStack(1, false);
+		if (targets.size()>0) itemStack.setHolder((Entity)targets.toArray()[0]);
 		int i = itemStack.getMaxCount();
+		
 		if (count > MAX_STACKS) {
-			source.sendError(Text.translatable("commands.give.failed.toomanyitems", i, itemStack.toHoverableText()));
+			source.sendError(Text.translatable("commands.give.failed.toomanyitems.stacks", 100, itemStack.toHoverableText()));
 			return 0;
 		} else {
 			for (ServerPlayerEntity serverPlayerEntity : targets) {
@@ -90,21 +94,21 @@ public class GiveStackCommand {
 					}
 				}
 			}
-
-			if (targets.size() == 1) {
-				source.sendFeedback(
-					() -> Text.translatable(
-							"commands.give.success.single", count, itemStack.toHoverableText(), ((ServerPlayerEntity)targets.iterator().next()).getDisplayName()
-						),
-					true
-				);
-			} else {
-				source.sendFeedback(() -> Text.translatable("commands.give.success.single", count, itemStack.toHoverableText(), targets.size()), true);
-			}
-
+			
+			source.sendFeedback( () -> GenerateFeedback(targets.size(), count, itemStack, targets), true );
 			return targets.size();
 		}
 	}
 	
+	private static MutableText GenerateFeedback(int size, int count, ItemStack stack, Collection<ServerPlayerEntity> targets  ){
+		int switchValue=  (count==1?0:1)+ (size==1?0:2) ;
+		return switch ( switchValue ){
+			case 0 -> Text.translatable( "commands.give.success.single.stack"   ,        stack.toHoverableText(), ((ServerPlayerEntity)targets.iterator().next()).getDisplayName()	);
+			case 1 -> Text.translatable( "commands.give.success.single.stacks"  , count, stack.toHoverableText(), ((ServerPlayerEntity)targets.iterator().next()).getDisplayName()	);
+			case 2 -> Text.translatable( "commands.give.success.multiple.stack" ,        stack.toHoverableText(), size													);
+			case 3 -> Text.translatable( "commands.give.success.multiple.stacks", count, stack.toHoverableText(), size													);
+			default -> null; //This is just to satisfy the compiler. It's unreachable.
+		};
+	}
 	
 }

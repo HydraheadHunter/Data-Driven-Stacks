@@ -1,0 +1,7 @@
+{
+  "commands.give.failed.toomanyitems.stacks"      : "Can't give more than %s stacks of %s"    ,
+  "commands.give.success.multiple.stack"          : "Gave a stack of %s to %s players"        ,
+  "commands.give.success.multiple.stacks"         : "Gave %s stacks of %s to %s players"      ,
+  "commands.give.success.single.stack"            : "Gave a stack of %s to %s"                ,
+  "commands.give.success.single.stacks"           : "Gave %s stacks of %s to %s"
+}
