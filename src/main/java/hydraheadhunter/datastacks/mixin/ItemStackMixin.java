@@ -33,6 +33,7 @@ import static java.lang.String.valueOf;
 public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack, iItemStackMixin {
 	
 	@Shadow public abstract ItemStack copyWithCount(int count);
+	private int targetStackSize;
 	private static Class<?> inventoryType;
 	private static Class<?> entityType;
 	
@@ -53,7 +54,7 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 		}
 		else if (holder != null) {
 			if (holder instanceof VillagerEntity) {
-				findGreatestValue = itemIsIn(thisAsStack, ModTags.Items.VILLAGER_LESS);
+				findGreatestValue = ! itemIsIn(thisAsStack, ModTags.Items.VILLAGER_LESS);
 			}
 			/*if (holder instanceof PlayerEntity) {
 				int test = 0;
