@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.collection.DefaultedList;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -101,47 +102,89 @@ public abstract class ScreenHandlerMixin {
 	
 	@Inject(method="insertItem",at=@At("HEAD"),cancellable = true)
 	protected void injectInsertItem(ItemStack stack, int startIndex, int endIndex, boolean fromLast, CallbackInfoReturnable cir){
- 		LOGGER.info("inject insertItem");
+ 		//LOGGER.info("inject insertItem");
 		Slot firstSlot = this.getSlot(startIndex);
 		LOGGER.info( firstSlot.inventory.getClass().toString() );
+		
+		// Inventory -> Player Inventory
 		if (firstSlot.inventory instanceof PlayerInventory) {
-			
 			PlayerEntity player = (((PlayerInventory) firstSlot.inventory).player);
 			ItemStack dummyStack= createDummyStack(stack,player);
-			int stackSizeDifference= stackSizeDifference( stack, dummyStack);
+			int stackSize =      stack.getMaxCount();
+			int dummySize = dummyStack.getMaxCount();
+			int stackSizeDifference = stackSize-dummySize;
+			
 			stack.setHolder(player);
 			
-			LOGGER.info( player.getNameForScoreboard() );
-			LOGGER.info( "Stack Size Difference = " + valueOf(stackSizeDifference));
-			if (stackSizeDifference <= 0 ){
-				return;
-			}
+			// If Player Inventory Stacks Equal or More: return to vanilla treatment;
+			if 			(stackSizeDifference <= 0 ) 		{ 					return; }
+			
+			// Player Inventory Stacks Less but the stack's current count fits in the new size.
+			if		 	(stack.getCount() <= dummySize) 	{ stack.getMaxCount();	return; }
+			
+			// Player Inventory Stacks Less AND the stack is larger than the Player inventory's stack size.
 			else {
-				LOGGER.info( "Source Is Larger Than Target Allows: " + stack.getItem().getName());
-				cir.setReturnValue( vanillaStackableCode(stack, startIndex, endIndex, fromLast) );
-				cir.cancel();
+				//LOGGER.info("Source Is Larger Than Target Allows: " + stack.getItem().getTranslationKey());
+				cir.setReturnValue(recurseStackable(stack, startIndex, endIndex, fromLast,dummySize, player));
 			}
 		}
 		
-		
+		//Player Inventory -> Inventory
 		else {
+			ItemStack dummyStack= createDummyStack(stack, null);
+			int stackSize =      stack.getMaxCount();
+			int dummySize = dummyStack.getMaxCount();
+			int stackSizeDifference = stackSize-dummySize;
 			stack.setHolder(null);
+			
+			// If Inventory Stacks Equal or More: return to vanilla treatment;
+			if 			(stackSizeDifference <= 0 ) 		{ 					return; }
+			
+			// If Inventory Stacks Less but the stack's current count fits in the new size, correct stacksize and return to vanila treatment.
+			if		 	(stack.getCount() <= dummySize) 	{ stack.getMaxCount();	return; }
+			
+			// Inventory Stacks Less AND the stack is larger than the Inventory's stack size.
+			else {
+				//LOGGER.info("Source Is Larger Than Target Allows: " + stack.getItem().getTranslationKey());
+				
+				//If stackable in the player inventory
+				cir.setReturnValue(recurseStackable(stack, startIndex, endIndex, fromLast,dummySize, null));
+				
+			}
 			LOGGER.info( "Nulled Out" );
 		}
 		
 	}
 	
-	private int stackSizeDifference( ItemStack sourceStack, ItemStack dummyStack){ return sourceStack.getMaxCount() - dummyStack.getMaxCount(); }
+	private boolean recurseUnstackable(ItemStack stack, int startIndex, int endIndex, boolean fromLast, @Nullable PlayerEntity player) {
+		return recurseStackable(stack, startIndex, endIndex, fromLast, 1, player);
+	}
+	
+	private boolean recurseStackable(ItemStack stack, int startIndex, int endIndex, boolean fromLast, int dummySize, @Nullable PlayerEntity player) {
+		ItemStack targetMaxStack= stack.copyWithCount(  Math.min(dummySize,stack.getCount())  );
+		targetMaxStack.setHolder(player);
+		targetMaxStack.getMaxCount();
+		
+		if (vanillaStackableCode(targetMaxStack, startIndex, endIndex, fromLast)){
+			stack.decrement(  dummySize-targetMaxStack.getCount()  );
+			if ( ! stack.isEmpty() )
+				recurseStackable(stack,startIndex,endIndex, fromLast, dummySize, player);
+			return true;
+		}
+		return false;
+	}
 	
 	private boolean vanillaStackableCode (ItemStack stack, int startIndex, int endIndex, boolean fromLast){
 		boolean toReturn= false;
 		
-		int i = fromLast? endIndex-1: startIndex;
+		int i =  (fromLast)? endIndex-1: startIndex;
+		
 		
 		if (stack.isStackable()) {
 			while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
 				Slot slot = this.slots.get(i);
 				ItemStack itemStack = slot.getStack();
+				
 				if (!itemStack.isEmpty() && ItemStack.areItemsAndComponentsEqual(stack, itemStack)) {
 					int j = itemStack.getCount() + stack.getCount();
 					int k = slot.getMaxItemCount(itemStack);
@@ -150,7 +193,8 @@ public abstract class ScreenHandlerMixin {
 						itemStack.setCount(j);
 						slot.markDirty();
 						toReturn = true;
-					} else if (itemStack.getCount() < k) {
+					}
+					else if (itemStack.getCount() < k) {
 						stack.decrement(k - itemStack.getCount());
 						itemStack.setCount(k);
 						slot.markDirty();
@@ -165,6 +209,39 @@ public abstract class ScreenHandlerMixin {
 				}
 			}
 		}
+		
+		if (!stack.isEmpty()) {
+			if (fromLast) {
+				i = endIndex - 1;
+			} else {
+				i = startIndex;
+			}
+			
+			while (fromLast ? i >= startIndex : i < endIndex) {
+				Slot slotx = this.slots.get(i);
+				ItemStack itemStackx = slotx.getStack();
+				if (itemStackx.isEmpty() && slotx.canInsert(stack)) {
+					int j = slotx.getMaxItemCount(stack);
+					slotx.setStack(stack.split(Math.min(stack.getCount(), j)));
+					slotx.markDirty();
+					toReturn = true;
+					break;
+				}
+				
+				if (fromLast) {
+					i--;
+				} else {
+					i++;
+				}
+			}
+		}
+		
+		
+		
+		
+		
+		
+		
 		return toReturn;
 	}
 	
