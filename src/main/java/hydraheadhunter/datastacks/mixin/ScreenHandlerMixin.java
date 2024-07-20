@@ -101,10 +101,10 @@ public abstract class ScreenHandlerMixin {
 	@Shadow @Final public DefaultedList<Slot> slots;
 	
 	@Inject(method="insertItem",at=@At("HEAD"),cancellable = true)
-	protected void injectInsertItem(ItemStack stack, int startIndex, int endIndex, boolean fromLast, CallbackInfoReturnable cir){
+	protected void injectInsertItem(ItemStack stack, int startIndex, int endIndex, boolean fromLast, CallbackInfoReturnable<Boolean> cir){
  		//LOGGER.info("inject insertItem");
 		Slot firstSlot = this.getSlot(startIndex);
-		LOGGER.info( firstSlot.inventory.getClass().toString() );
+		//LOGGER.info( firstSlot.inventory.getClass().toString() );
 		
 		// Inventory -> Player Inventory
 		if (firstSlot.inventory instanceof PlayerInventory) {
@@ -117,10 +117,10 @@ public abstract class ScreenHandlerMixin {
 			stack.setHolder(player);
 			
 			// If Player Inventory Stacks Equal or More: return to vanilla treatment;
-			if 			(stackSizeDifference <= 0 ) 		{ 					return; }
+			if 	(stackSizeDifference <= 0 	) 	{ 					return; }
 			
 			// Player Inventory Stacks Less but the stack's current count fits in the new size.
-			if		 	(stack.getCount() <= dummySize) 	{ stack.getMaxCount();	return; }
+			if	(stack.getCount() <= dummySize) 	{ stack.getMaxCount();	return; }
 			
 			// Player Inventory Stacks Less AND the stack is larger than the Player inventory's stack size.
 			else {
@@ -138,10 +138,10 @@ public abstract class ScreenHandlerMixin {
 			stack.setHolder(null);
 			
 			// If Inventory Stacks Equal or More: return to vanilla treatment;
-			if 			(stackSizeDifference <= 0 ) 		{ 					return; }
+			if 	(stackSizeDifference <= 0 ) 		{ 					return; }
 			
 			// If Inventory Stacks Less but the stack's current count fits in the new size, correct stacksize and return to vanila treatment.
-			if		 	(stack.getCount() <= dummySize) 	{ stack.getMaxCount();	return; }
+			if		(stack.getCount() <= dummySize) 	{ stack.getMaxCount();	return; }
 			
 			// Inventory Stacks Less AND the stack is larger than the Inventory's stack size.
 			else {
@@ -151,15 +151,15 @@ public abstract class ScreenHandlerMixin {
 				cir.setReturnValue(recurseStackable(stack, startIndex, endIndex, fromLast,dummySize, null));
 				
 			}
-			LOGGER.info( "Nulled Out" );
+			//LOGGER.info( "Nulled Out" );
 		}
 		
 	}
-	
+
 	private boolean recurseUnstackable(ItemStack stack, int startIndex, int endIndex, boolean fromLast, @Nullable PlayerEntity player) {
 		return recurseStackable(stack, startIndex, endIndex, fromLast, 1, player);
 	}
-	
+
 	private boolean recurseStackable(ItemStack stack, int startIndex, int endIndex, boolean fromLast, int dummySize, @Nullable PlayerEntity player) {
 		ItemStack targetMaxStack= stack.copyWithCount(  Math.min(dummySize,stack.getCount())  );
 		targetMaxStack.setHolder(player);
@@ -173,7 +173,7 @@ public abstract class ScreenHandlerMixin {
 		}
 		return false;
 	}
-	
+
 	private boolean vanillaStackableCode (ItemStack stack, int startIndex, int endIndex, boolean fromLast){
 		boolean toReturn= false;
 		
@@ -236,14 +236,10 @@ public abstract class ScreenHandlerMixin {
 			}
 		}
 		
-		
-		
-		
-		
-		
-		
 		return toReturn;
 	}
+	//*/
+	
 	
 }
 

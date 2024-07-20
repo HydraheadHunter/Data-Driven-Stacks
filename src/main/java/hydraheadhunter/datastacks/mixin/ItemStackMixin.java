@@ -1,6 +1,5 @@
 package hydraheadhunter.datastacks.mixin;
 
-import hydraheadhunter.datastacks.util.ItemStackInterface;
 import hydraheadhunter.datastacks.util.ModTags;
 import net.fabricmc.fabric.api.item.v1.FabricItemStack;
 import net.minecraft.block.Block;
@@ -9,7 +8,6 @@ import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -29,13 +27,13 @@ import static hydraheadhunter.datastacks.DataDrivenStacks.*;
 import static java.lang.String.valueOf;
 
 @Mixin(ItemStack.class)
-public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack, ItemStackInterface {
+public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack {
 	
 	@Shadow public abstract ItemStack copyWithCount(int count);
-	
 	@Shadow public abstract boolean isEmpty();
 	
 	private EntityType<?> holderType;
+	private List<Map.Entry<Integer, TagKey<Item>>> setFilteredStream = null;
 	
 	
 	@Inject(method = "setHolder", at= @At("HEAD"), cancellable = true)
@@ -44,7 +42,7 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 		holderType = entity.getType();
 		
 		if ( entity instanceof MobEntity ) {
-			LOGGER.info("SET MOB HOLDER");
+			//LOGGER.info("SET MOB HOLDER");
 			info.cancel();
 		}
 		else if ( holderType.equals(EntityType.PLAYER) ) {
@@ -52,20 +50,17 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 			info.cancel();
 		}
 		else {
-			LOGGER.info("DIFFERENT TYPE");
+			//LOGGER.info("DIFFERENT TYPE");
 		}
 	}
 	
-	
+	//TODO: CACHE ISIN INFO TO CUT DOWN SEARCH TIME
 	@Inject(method = "getMaxCount", at = @At("HEAD"))
 	private void overrideMaxCountWithData(CallbackInfoReturnable<Integer> cir) {
 		if (this.isEmpty()) return;
 		ItemStack thisAsStack = (ItemStack) (Object) this;
-
-		boolean hadHolder=false;
-		boolean hadPlayerHolder=false;
-		boolean wasInMore=false;
-		boolean wasInLess=false;
+		
+		
 		Map.Entry<Integer, TagKey<Item>> entry = null;
 		boolean findGreatestValue = true;
 		if( blockIsIn(thisAsStack, BlockTags.SHULKER_BOXES)){
@@ -74,19 +69,15 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 			findGreatestValue = !(SMALLER_STACK_FULL_SHULKERS ^ emptyContents.equals(contents)) ; //xnor
 		}
 		else if (holderType != null) {
-hadHolder=true;
 			if (holderType.equals(EntityType.VILLAGER )) {
 				findGreatestValue = ! itemIsIn(thisAsStack, ModTags.Items.VILLAGER_LESS);
 			}
 			if (holderType.equals(EntityType.PLAYER)) {
-hadPlayerHolder=true;
 				if ( itemIsIn(thisAsStack, ModTags.Items.PLAYER_MORE) ) {
-wasInMore = true;
 					findGreatestValue = true;
 				}
 				else {
 					findGreatestValue = !itemIsIn(thisAsStack, ModTags.Items.PLAYER_LESS);
-wasInLess= itemIsIn(thisAsStack,ModTags.Items.PLAYER_LESS);
 				}
 			}//*/
 		}
@@ -95,16 +86,12 @@ wasInLess= itemIsIn(thisAsStack,ModTags.Items.PLAYER_LESS);
 				itemIsIn(thisAsStack, ModTags.Items.VILLAGER_MORE)  ||
 				itemIsIn(thisAsStack, ModTags.Items.PLAYER_MORE  )
 			);
-wasInMore = itemIsIn(thisAsStack, ModTags.Items.PLAYER_MORE);
-wasInLess = itemIsIn(thisAsStack, ModTags.Items.PLAYER_LESS);
 		}
 		
 		entry= findEntry(thisAsStack, findGreatestValue);
 		if (entry == null) return;
 		
-		//targetStackSize=entry.getKey();
 		ChangeMaxStackSize(thisAsStack, entry.getKey());
-	
 	}
 	
 	@Inject(method = "areItemsAndComponentsEqual", at = @At("HEAD"), cancellable = true)
@@ -158,22 +145,17 @@ wasInLess = itemIsIn(thisAsStack, ModTags.Items.PLAYER_LESS);
 	}
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
 	@Unique
 	private Map.Entry<Integer, TagKey<Item>> findEntry(ItemStack stack, boolean findGreatestValue){
-		List<Map.Entry<Integer, TagKey<Item>>> setFilteredStream =
-		ModTags.Items.STACK_SIZES.entrySet().stream()
-		.filter(entry -> itemIsIn(stack, entry.getValue())).toList();
+		if (setFilteredStream == null) {
+			setFilteredStream =
+			ModTags.Items.STACK_SIZES.entrySet().stream()
+			.filter(entry -> itemIsIn(stack, entry.getValue())).toList();
+		}
 		
 		if (setFilteredStream.isEmpty()) return null;
-		return findGreatestValue ? setFilteredStream.getLast(): setFilteredStream.getFirst();
+		List<Map.Entry<Integer, TagKey<Item>>> localfilteredStream= setFilteredStream;
+		return findGreatestValue ? localfilteredStream.getLast(): localfilteredStream.getFirst();
 	}
 	
 	@Unique

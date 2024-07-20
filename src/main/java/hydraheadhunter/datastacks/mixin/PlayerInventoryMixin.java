@@ -18,11 +18,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
+import static hydraheadhunter.datastacks.DataDrivenStacks.LOGGER;
+import static hydraheadhunter.datastacks.util.common.createDummyStack;
+import static java.lang.String.valueOf;
+
 @Mixin(PlayerInventory.class)
 public abstract class PlayerInventoryMixin {
 
 	@Shadow @Final public PlayerEntity player;
 	@Shadow @Final private List<DefaultedList<ItemStack>> combinedInventory;
+	
+	@Shadow public abstract void setStack(int slot, ItemStack stack);
+	
+	@Shadow public abstract ItemStack getStack(int slot);
+	
+	@Shadow protected abstract int addStack(int slot, ItemStack stack);
 	
 	@ModifyArg(method = "canStackAddMore",  at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;getMaxCount(Lnet/minecraft/item/ItemStack;)I"), index = 0)
 	private ItemStack addPlayerHolder_1 (ItemStack stack) {
@@ -42,7 +52,7 @@ public abstract class PlayerInventoryMixin {
 	}
 
 	@Inject(method= "getStack", at= @At("TAIL"), cancellable = true )
-	private void injectGetStack( int slot, CallbackInfoReturnable cir, @Local List<ItemStack> list){
+	private void injectGetStack( int slot, CallbackInfoReturnable<ItemStack> cir, @Local List<ItemStack> list){
 		if (list == null) return;
 		ItemStack item = list.get(slot);
 		
@@ -51,7 +61,7 @@ public abstract class PlayerInventoryMixin {
 		item.setHolder(player);
 	 	cir.setReturnValue(item);
 	}
-//*/
+
 
 }
 

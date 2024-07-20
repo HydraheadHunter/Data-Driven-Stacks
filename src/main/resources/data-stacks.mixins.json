@@ -9,11 +9,12 @@
 		"override_cap.ItemStackMixin",
 
         "ItemStackMixin",
-		"EntityPickUpItemsMixin",
 
+		"EntityPickUpItemsMixin",
 		"PlayerInventoryMixin",
-		"InventoryChangedCriterionMixin",
-		"ScreenHandlerMixin"
+		"ScreenHandlerMixin",
+		"SlotMixin"
+
 	],
 	"injectors": {
 		"defaultRequire": 1
