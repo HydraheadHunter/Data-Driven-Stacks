@@ -1,5 +1,6 @@
 package hydraheadhunter.datastacks.mixin;
 
+import hydraheadhunter.datastacks.util.ItemStackMixinInterface;
 import hydraheadhunter.datastacks.util.ModTags;
 import net.fabricmc.fabric.api.item.v1.FabricItemStack;
 import net.minecraft.block.Block;
@@ -10,9 +11,11 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.TagKey;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -27,13 +30,15 @@ import static hydraheadhunter.datastacks.DataDrivenStacks.*;
 import static java.lang.String.valueOf;
 
 @Mixin(ItemStack.class)
-public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack {
+public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack, ItemStackMixinInterface {
 	
 	@Shadow public abstract ItemStack copyWithCount(int count);
 	@Shadow public abstract boolean isEmpty();
 	
-	private EntityType<?> holderType;
-	private List<Map.Entry<Integer, TagKey<Item>>> setFilteredStream = null;
+	@Shadow public abstract @Nullable Entity getHolder();
+	
+	public EntityType<?> holderType;
+	public List<Map.Entry<Integer, TagKey<Item>>> setFilteredStream = null;
 	
 	
 	@Inject(method = "setHolder", at= @At("HEAD"), cancellable = true)
@@ -136,6 +141,16 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 			cir.setReturnValue(stack.isEmpty() && otherStack.isEmpty() ? true : Objects.equals(dummy1, dummy2));
 			
 		}
+	}
+	
+	@Inject(method="copy", at=@At("TAIL") )
+	private ItemStack copyAdditionalInformation(CallbackInfoReturnable<ItemStack> cir){
+		ItemStack newStack= cir.getReturnValue();
+		ItemStackMixin mixed= (ItemStackMixin) (Object) newStack;
+		mixed.holderType = this.holderType;
+		mixed.setFilteredStream= this.setFilteredStream;
+		newStack= (ItemStack) (Object) mixed;
+		return newStack;
 	}
 	
 	private static boolean compareContainerContents(ItemStack stack1, ItemStack stack2) {
