@@ -25,9 +25,11 @@ public class DataDrivenStacks implements ModInitializer {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
-		LOGGER.info("Increasing `max_stack_size` cap.");
-		LOGGER.info("Implementing Data-Driven max_stack_size");
+		LOGGER.info("Increasing `max_stack_size` cap and implementing data-driven max stack sizes. Beta");
+
 		
+		
+		//Register the give stack command
 		CommandRegistrationCallback.EVENT.register(GiveStackCommand::register);
 		
 	}

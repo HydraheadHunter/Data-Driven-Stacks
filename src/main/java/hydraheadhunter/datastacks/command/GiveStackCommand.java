@@ -24,6 +24,7 @@ public class GiveStackCommand {
 	public static final int MAX_STACKS = 100;
 	
 	public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
+	//Exactly the same register could as the GiveCommand, except with the literal "Stack" added on the end.
 		dispatcher.register(
 			CommandManager.literal("give")
 				.requires(source -> source.hasPermissionLevel(2))
@@ -50,6 +51,7 @@ public class GiveStackCommand {
 				
 	}
 
+	//Takes the int argument and multiplies it by the requested item's max stack size. Then gives the player that many of the item and broadcasts feedback to ops.
 	private static int execute(ServerCommandSource source, ItemStackArgument item, Collection<ServerPlayerEntity> targets, int count) throws CommandSyntaxException {
 		ItemStack itemStack = item.createStack(1, false);
 		if (targets.size()>0) itemStack.setHolder((Entity)targets.toArray()[0]);
@@ -100,6 +102,7 @@ public class GiveStackCommand {
 		}
 	}
 	
+	//Gives the feedback as mutable text.
 	private static MutableText GenerateFeedback(int size, int count, ItemStack stack, Collection<ServerPlayerEntity> targets  ){
 		int switchValue=  (count==1?0:1)+ (size==1?0:2) ;
 		return switch ( switchValue ){

@@ -14,6 +14,7 @@ import java.util.Map;
 import static hydraheadhunter.datastacks.DataDrivenStacks.MAX_STACK_SIZE_CAP;
 import static hydraheadhunter.datastacks.DataDrivenStacks.MOD_ID;
 
+/**All the mod tags this mod introduces*/
 public class ModTags {
 	
 	public static class Items {

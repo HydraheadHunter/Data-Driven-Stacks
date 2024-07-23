@@ -33,7 +33,6 @@ public class ModTagsListener implements SimpleSynchronousResourceReloadListener 
 		for(Identifier id : manager.findResources(MOD_ID, predicate).keySet()) {
 			try(InputStream stream = (InputStream) manager.getResource(id).stream()) {
 				int streamOut = stream.read();
-				// Consume the stream however you want, medium, rare, or well done.
 			} catch(Exception e) {
 				LOGGER.error("Error occurred while loading resource json" + id.toString(), e);
 			}

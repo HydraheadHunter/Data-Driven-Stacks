@@ -4,8 +4,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/** Copy pasted from stack exchange
+ * Not yet used anywhere in the project
+ */
+
 public class ItemTagCache {
-		
+		/*
 	private static ItemTagCache instance;
 	private static Object monitor = new Object();
 	private Map<String, Object> cache = Collections.synchronizedMap(new HashMap<String, Object>());
@@ -38,5 +42,5 @@ public class ItemTagCache {
 			}
 		}
 		return instance;
-	}
+	}*/
 }

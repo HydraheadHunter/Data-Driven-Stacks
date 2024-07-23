@@ -22,17 +22,14 @@ import static hydraheadhunter.datastacks.DataDrivenStacks.LOGGER;
 import static hydraheadhunter.datastacks.util.common.createDummyStack;
 import static java.lang.String.valueOf;
 
+/** Adds a call of stack#setHolder(player) before each call of getMaxCount
+ * Facilitates max count differences for players.
+*/
 @Mixin(PlayerInventory.class)
 public abstract class PlayerInventoryMixin {
 
 	@Shadow @Final public PlayerEntity player;
 	@Shadow @Final private List<DefaultedList<ItemStack>> combinedInventory;
-	
-	@Shadow public abstract void setStack(int slot, ItemStack stack);
-	
-	@Shadow public abstract ItemStack getStack(int slot);
-	
-	@Shadow protected abstract int addStack(int slot, ItemStack stack);
 	
 	@ModifyArg(method = "canStackAddMore",  at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;getMaxCount(Lnet/minecraft/item/ItemStack;)I"), index = 0)
 	private ItemStack addPlayerHolder_1 (ItemStack stack) {
@@ -46,7 +43,7 @@ public abstract class PlayerInventoryMixin {
 		return stack;
 	}
 
-	@Inject(method= "offer", at = @At("Head"))
+	@Inject(method= "offer", at = @At("HEAD"))
 	private void addPlayerHolder_3( ItemStack stack, boolean notifiesClient, CallbackInfo info){
 		stack.setHolder(player);
 	}

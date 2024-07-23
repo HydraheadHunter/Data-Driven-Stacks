@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 import static hydraheadhunter.datastacks.DataDrivenStacks.MAX_STACK_SIZE_CAP;
 
+/**Overrides the hard 99 cap on max_stack_size in one of 4 places*/
 @Mixin(DataComponentTypes.class)
 public abstract class DataComponentTypeMixin {
 	

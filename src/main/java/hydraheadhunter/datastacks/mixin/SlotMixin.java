@@ -28,7 +28,7 @@ public abstract class SlotMixin {
 	@Inject(method="canInsert", at= @At("TAIL"), cancellable = true)
 		private void overrideCanInsertForOverFullStacks(ItemStack stack, CallbackInfoReturnable<Boolean> cir){
 		if( !cir.getReturnValueZ()) return;
-		//LOGGER.info("So true worstie");
+		LOGGER.info("So true worstie");
 		
 		PlayerEntity player= this.inventory instanceof PlayerInventory? ((PlayerInventory) this.inventory).player:null;
 		ItemStack dummyStack= createDummyStack(stack,player);

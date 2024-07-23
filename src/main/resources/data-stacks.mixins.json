@@ -9,8 +9,7 @@
 		"override_cap.ItemStackMixin",
 
         "ItemStackMixin",
-
-		"EntityPickUpItemsMixin",
+        "AdjustStackSizeOnPickupMixin",
 		"PlayerInventoryMixin",
 		"ScreenHandlerMixin",
 		"SlotMixin"
