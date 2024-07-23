@@ -124,7 +124,7 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 			int maxCount1 = AgtB ? maxCountA : maxCountB;
 			int maxCount2 = AgtB ? maxCountB : maxCountA;
 			
-			if (stack2.getCount() >= maxCount2) { cir.setReturnValue(false); return; }
+			//if (stack2.getCount() >= maxCount2) { cir.setReturnValue(false); return; }
 			
 			Set<ComponentType<?>> stackComponents1 = stack1.getComponents().getTypes();
 			Set<ComponentType<?>> stackComponents2 = stack2.getComponents().getTypes();
