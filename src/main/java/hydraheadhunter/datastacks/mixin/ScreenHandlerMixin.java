@@ -9,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.util.ClickType;
 import net.minecraft.util.collection.DefaultedList;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -66,25 +67,25 @@ public abstract class ScreenHandlerMixin {
 		cir.setReturnValue(recursiveInsertStack(stack, startIndex, endIndex, fromLast, dummySize, player));
 		
 	}
-
-	@Inject(method="internalOnSlotClick", at=@At("HEAD"))
-	private void injectInternalOnSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci){
-		//LOGGER.info("injecting InternalOnSlotClick");
-	}
 	
+	
+	/** Changes the behavior for click-and-drag placement of items
+	 * by overriding the calculation of how many items go in each slot (n)
+	 */
 	@ModifyVariable(method= "internalOnSlotClick", at=@At("STORE"), name="n")
-	private int modifyItemStack2(int n, @Local(name="slot2") Slot slot, @Local(name="itemStack2") ItemStack stack ){
+	private int modifyItemStack2(int stackMaxCount, @Local(name="slot2") Slot slot, @Local(name="itemStack2") ItemStack stack ){
 		Entity player = slot.inventory instanceof PlayerInventory ? ((PlayerInventory) slot.inventory).player:null;
 		ItemStack dummyStack= createDummyStack(stack,player);
-		
-		return Math.min( n, dummyStack.getMaxCount() );
+		stack.setHolder(player);
+		return Math.min( stackMaxCount, dummyStack.getMaxCount() );
 	}
 	
 	@Inject(method="internalOnSlotClick", at=@At(value="INVOKE",target="Lnet/minecraft/screen/ScreenHandler;getCursorStack()Lnet/minecraft/item/ItemStack;"),
 	slice= @Slice( from= @At(value = "INVOKE", target = "Lnet/minecraft/screen/slot/Slot;getStack()Lnet/minecraft/item/ItemStack;"),
 				to= @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;onPickupSlotClick(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/ClickType;)V")),
 	cancellable=true)
-	private void changeOverloadedPickUpBehavior(int slotIndex, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo info ) {
+	private void changeOverloadedPickUpBehavior(int slotIndex, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo info) {
+		ClickType clickType= button==0 ? ClickType.LEFT:ClickType.RIGHT;
 		Slot targetSlot= this.slots.get(slotIndex);
 		ItemStack slotStack= targetSlot.getStack();
 		ItemStack cursorStack= this.getCursorStack();
@@ -106,20 +107,24 @@ public abstract class ScreenHandlerMixin {
 			cursorStack.getMaxCount();
 		}
 		else if ( !slotStack.isEmpty() && (!ItemStack.areItemsAndComponentsEqual(cursorStack,slotStack) || slotStack.getMaxCount()-slotStack.getCount()<=0)){ info.cancel();	}
+		
 		else if (!slotStack.isEmpty()){
 			int slotMax = slotStack.getMaxCount();
 			int slotCount= slotStack.getCount();
 			int slotRoom= slotMax-slotCount;
-			slotStack.increment(slotRoom);
-			cursorStack.decrement(slotRoom);
+			int amount = clickType == ClickType.LEFT? slotRoom:1;
+			slotStack.increment( amount);
+			cursorStack.decrement(amount);
 			slot.markDirty();
 			info.cancel();
 		}
 		else {
+			
 			ItemStack dummyStack = createDummyStack(cursorStack, isPlayerInventory?player:null);
 			int slotMax = dummyStack.getMaxCount();
-			slot.setStack( dummyStack.copyWithCount( slotMax ));
-			cursorStack.decrement(slotMax);
+			int amount = clickType == ClickType.LEFT? slotMax:1;
+			slot.setStack( dummyStack.copyWithCount( amount ));
+			cursorStack.decrement(amount);
 			slot.markDirty();
 			info.cancel();
 		}
