@@ -12,7 +12,6 @@ import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.ClickType;
 import net.minecraft.util.collection.DefaultedList;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -37,40 +36,12 @@ public abstract class ScreenHandlerMixin {
 	@Shadow public abstract Slot getSlot(int index);
 	@Shadow @Final public DefaultedList<Slot> slots;
 	
-	@Shadow @Final private static Logger LOGGER;
-	
 	@Shadow public abstract ItemStack getCursorStack();
 	
-	/** Injects at the top of the insertItem method
-	 *  If the source and target max stack sizes are the same,
-	 *  or the source stack's count is less than the target inventory's max stack size,
-	 *  the function returns to vanilla behavior.
-	 *  Otherwise, it overrides the vanilla function's return
-	 *  value with the result of it's recursive helper function.
-	 */
-	@Inject(method="insertItem",at=@At("HEAD"),cancellable = true)
-	protected void checkIfOverrideNecessary(ItemStack stack, int startIndex, int endIndex, boolean fromLast, CallbackInfoReturnable<Boolean> cir){
-		//Setup and housekeeping
-		Slot firstSlot = this.getSlot(startIndex);
-		PlayerEntity player= (firstSlot.inventory instanceof PlayerInventory)? ((PlayerInventory) firstSlot.inventory).player:null;
-		ItemStack dummyStack= createDummyStack(stack,player);
-		int stackSize =      stack.getMaxCount();
-		int dummySize = dummyStack.getMaxCount();
-		int stackSizeDifference = stackSize-dummySize;
-		stack.setHolder(player);
-		
-		//Check if return early
-		if 	(stackSizeDifference <= 0 	) 	{ 					return; }
-		if	(stack.getCount() <= dummySize) 	{ stack.getMaxCount();	return; }
-		
-		//If still going, override insertItem's return.
-		cir.setReturnValue(recursiveInsertStack(stack, startIndex, endIndex, fromLast, dummySize, player));
-		
-	}
-	
-	
-	/** Changes the behavior for click-and-drag placement of items
-	 * by overriding the calculation of how many items go in each slot (n)
+	/** Changes the behavior for click-and-drag item placement
+	 * For each slot being affected by a click-and-drag action,
+	 * overrides the result stack size, called `n`, with a math.min() call
+	 * comparing n against a dummyStack of the item in that slot.
 	 */
 	@ModifyVariable(method= "internalOnSlotClick", at=@At("STORE"), name="n")
 	private int modifyItemStack2(int stackMaxCount, @Local(name="slot2") Slot slot, @Local(name="itemStack2") ItemStack stack ){
@@ -80,6 +51,13 @@ public abstract class ScreenHandlerMixin {
 		return Math.min( stackMaxCount, dummyStack.getMaxCount() );
 	}
 	
+	/** Changes the behavior of click item placement.
+	 * Checks if stack size distinction for player/non-player. If no, returns to vanilla behavior.
+	 * Checks if stack is smaller than max stack for target slot. If so, updates holder and returns to vanilla behavior.
+	 * Checks if overloaded stack can be combined into slot stack. If no, cancels.
+	 * 	If so, checks if slot is empty or non-empty.
+	 * 	then adds to slot stack accordingly and cancels.
+	 */
 	@Inject(method="internalOnSlotClick", at=@At(value="INVOKE",target="Lnet/minecraft/screen/ScreenHandler;getCursorStack()Lnet/minecraft/item/ItemStack;"),
 	slice= @Slice( from= @At(value = "INVOKE", target = "Lnet/minecraft/screen/slot/Slot;getStack()Lnet/minecraft/item/ItemStack;"),
 				to= @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;onPickupSlotClick(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/ClickType;)V")),
@@ -131,6 +109,7 @@ public abstract class ScreenHandlerMixin {
 		
 	}
 	
+	/** Boolean check for player/non-player stack-size distinction. */
 	@Unique
 	private boolean stackSizesDifferent(ItemStack stack, Entity player) {
 		if ( stack.isEmpty())  return false;
@@ -140,17 +119,46 @@ public abstract class ScreenHandlerMixin {
 		return dummyStackInventory.getMaxCount() != dummyStackPlayer.getMaxCount() ;
 	}
 	
+	/** Boolean check for `count > max_stack_size` in player/non-player distinguished stacks*/
 	@Unique
 	private boolean checkStackOverloaded( ItemStack stack, Entity player, boolean isPlayerInventory){
 		ItemStack targetInventoryDummyStack = createDummyStack(stack, isPlayerInventory?player:null);
 		return stack.getCount() > targetInventoryDummyStack.getMaxCount();
 	}
 	
-	/** A recursive function which takes the uses the target inventory's max stack size
-	 * to add items one target inventory's stack worth at a time.
-	 * decrementing the source Stack by the amount accepted.
-	 * Returns when the stack didn't decriment (which implies the inventory has become filled up).
-	 * or the stack is empty. Otherwise, it recurses.
+	
+	/** Changes behavior for shift-click item movement.
+	 * Checks if stack has player/non-player stack-size distinction. If no returns to vanilla behavior
+	 * Checks if the stack <= target slots max_stack_size. If so, set's holder and returns to vanilla behavior.
+	 * If not returned early, calls its' recursive helper function to override the vanilla behavior and return value.
+	 */
+	@Inject(method="insertItem",at=@At("HEAD"),cancellable = true)
+	protected void OverrideInsertItemIfNecessary(ItemStack stack, int startIndex, int endIndex, boolean fromLast, CallbackInfoReturnable<Boolean> cir){
+		//Setup and housekeeping
+		Slot firstSlot = this.getSlot(startIndex);
+		PlayerEntity player= (firstSlot.inventory instanceof PlayerInventory)? ((PlayerInventory) firstSlot.inventory).player:null;
+		ItemStack dummyStack= createDummyStack(stack,player);
+		int stackSize =      stack.getMaxCount();
+		int dummySize = dummyStack.getMaxCount();
+		int stackSizeDifference = stackSize-dummySize;
+		stack.setHolder(player);
+		
+		//Check if return early
+		if 	(stackSizeDifference <= 0 	) 	{ 					return; }
+		if	(stack.getCount() <= dummySize) 	{ stack.getMaxCount();	return; }
+		
+		//If still going, override insertItem's return.
+		cir.setReturnValue(recursiveInsertStack(stack, startIndex, endIndex, fromLast, dummySize, player));
+		
+	}
+	
+	/** OverridedInserItemIfNecessary's recursive helper function
+	 * Attempts to insert all the items in the source stack, one target-inventory stack's-worth at a time.
+	 * Decrements e source Stack by the amount accepted.
+	 * Returns when the source stack either
+	 * 		• Becomes empty
+	 * 		• Doesn't decrement( implying the target inventory has filled up)
+	 * Otherwise, it recurses.
 	 */ @Unique
 	private boolean recursiveInsertStack(ItemStack stack, int startIndex, int endIndex, boolean fromLast, int dummySize, @Nullable PlayerEntity player) {
 		ItemStack targetMaxStack= stack.copyWithCount(  Math.min(dummySize,stack.getCount())  );
@@ -167,6 +175,7 @@ public abstract class ScreenHandlerMixin {
 	}
 
 	/**The vanilla code for inserting items.
+	 * Returns a boolean on whether the stack argument was decremented.
 	 */ @Unique
 	private boolean vanillaStackableCode (ItemStack stack, int startIndex, int endIndex, boolean fromLast){
 		boolean toReturn= false;
