@@ -1,8 +1,6 @@
 package hydraheadhunter.datastacks.mixin;
 
 
-import com.llamalad7.mixinextras.sugar.Local;
-import com.sun.jna.platform.win32.WinCrypt;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -19,13 +17,11 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import static hydraheadhunter.datastacks.util.common.createDummyStack;
-import static java.lang.String.valueOf;
 
 /** Changes the behaviors of items that are shift-clicked betwixt different inventories.
  * Specifically makes sure that when items are moved betwixt two inventories,
@@ -39,8 +35,6 @@ public abstract class ScreenHandlerMixin {
 	@Shadow @Final public DefaultedList<Slot> slots;
 	
 	@Shadow @Final private static Logger LOGGER;
-	
-	@Shadow private ItemStack cursorStack;
 	
 	@Shadow public abstract ItemStack getCursorStack();
 	
