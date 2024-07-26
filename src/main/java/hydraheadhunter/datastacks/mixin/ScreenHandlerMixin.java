@@ -32,7 +32,7 @@ public abstract class ScreenHandlerMixin {
 	/** Injects at the top of the insertItem method
 	 *  If the source and target max stack sizes are the same,
 	 *  or the source stack's count is less than the target inventory's max stack size,
-	 *  the function returns to vaniila behavior.
+	 *  the function returns to vanilla behavior.
 	 *  Otherwise, it overrides the vanilla function's return
 	 *  value with the result of it's recursive helper function.
 	 */

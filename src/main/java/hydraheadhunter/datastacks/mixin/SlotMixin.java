@@ -26,9 +26,8 @@ import static java.lang.String.valueOf;
 public abstract class SlotMixin {
 	
 	@Shadow @Final public Inventory inventory;
-	
 	@Shadow public abstract ItemStack getStack();
-	/*
+	
 	@Inject(method="canInsert", at= @At("TAIL"), cancellable = true)
 	private void overrideCanInsertForOverFullStacks(ItemStack stack, CallbackInfoReturnable<Boolean> cir){
 		if( !cir.getReturnValueZ())
@@ -45,7 +44,7 @@ LOGGER.info( player!= null? player.getName().toString():"null");
 LOGGER.info("d:"+dummyStackSize + ", c:"+ stackSize);
 		
 		if (stackSize == dummyStackSize) return;
-		if (stack.getCount() <= dummyStackSize) return;
+		if (stack.getCount() < dummyStackSize) return;
 LOGGER.info("illegal Stack");
 		
 		ItemStack slotStack= this.getStack();
@@ -63,38 +62,36 @@ LOGGER.info("illegal Stack");
 		return stack;
 	}//*/
 	
-	@Shadow public abstract boolean canInsert(ItemStack stack);
-	
 	@Inject(method="insertStack(Lnet/minecraft/item/ItemStack;I)Lnet/minecraft/item/ItemStack;", at=@At("HEAD"))
 	private void injectInsertStack(ItemStack stack, int count, CallbackInfoReturnable<ItemStack> cir){
 		LOGGER.info("Inject InsertStack");
 	}
-	
+	/*
 	@Redirect(method="insertStack(Lnet/minecraft/item/ItemStack;I)Lnet/minecraft/item/ItemStack;", at= @At(value = "INVOKE", target = "Lnet/minecraft/screen/slot/Slot;canInsert(Lnet/minecraft/item/ItemStack;)Z"))
 	private boolean injectInsertStack(Slot instance, ItemStack stack, @Local(argsOnly = true) int count){
-		boolean vanilla_canInsert= instance.canInsert(stack);
+	/*	boolean vanilla_canInsert= instance.canInsert(stack);
 		if (!vanilla_canInsert) return false;
-	LOGGER.info("So true worstie");
+	//LOGGER.info("So true worstie");
 		
 		PlayerEntity player= catchPlayer();
-	LOGGER.info( player!= null? player.getName().toString():"null");
+	//LOGGER.info( player!= null? player.getName().toString():"null");
 		
 		ItemStack dummyStack= createDummyStack(stack,player);
 		
 		int dummyStackSize= dummyStack.getMaxCount();
 		int stackSize= stack.getMaxCount();
-	LOGGER.info("d:"+dummyStackSize + ", c:"+ stackSize);
+	//LOGGER.info("d:"+dummyStackSize + ", c:"+ stackSize);
 		
 		if (stackSize == dummyStackSize) return true;
 		if (stack.getCount() <= dummyStackSize) return true;
-	LOGGER.info("illegal Stack");
+	//LOGGER.info("illegal Stack");
 		
 		ItemStack slotStack= this.getStack();
 		if (slotStack.isEmpty() || stack.isEmpty()) return true;
-	LOGGER.info("RETURNING FALSE");
-	LOGGER.info("");
+	//LOGGER.info("RETURNING FALSE");
+	//LOGGER.info("");
 		return false;
-	}
+	}//*/
 	
 	@ModifyVariable(method="insertStack(Lnet/minecraft/item/ItemStack;I)Lnet/minecraft/item/ItemStack;", at=@At("STORE"), name="i")
 	private int capIatDummyMaxStackSize( int i, @Local(name="stack") ItemStack stack) {
