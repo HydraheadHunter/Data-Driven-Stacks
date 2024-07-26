@@ -1,6 +1,7 @@
 package hydraheadhunter.datastacks.mixin;
 
 
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -17,6 +18,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -70,21 +72,24 @@ public abstract class ScreenHandlerMixin {
 		//LOGGER.info("injecting InternalOnSlotClick");
 	}
 	
+	@ModifyVariable(method= "internalOnSlotClick", at=@At("STORE"), name="n")
+	private int modifyItemStack2(int n, @Local(name="slot2") Slot slot, @Local(name="itemStack2") ItemStack stack ){
+		Entity player = slot.inventory instanceof PlayerInventory ? ((PlayerInventory) slot.inventory).player:null;
+		ItemStack dummyStack= createDummyStack(stack,player);
+		
+		return Math.min( n, dummyStack.getMaxCount() );
+	}
+	
 	@Inject(method="internalOnSlotClick", at=@At(value="INVOKE",target="Lnet/minecraft/screen/ScreenHandler;getCursorStack()Lnet/minecraft/item/ItemStack;"),
 	slice= @Slice( from= @At(value = "INVOKE", target = "Lnet/minecraft/screen/slot/Slot;getStack()Lnet/minecraft/item/ItemStack;"),
 				to= @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;onPickupSlotClick(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/ClickType;)V")),
 	cancellable=true)
-	private void changeItemStack4 ( int slotIndex, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo info ) {
+	private void changeOverloadedPickUpBehavior(int slotIndex, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo info ) {
 		Slot targetSlot= this.slots.get(slotIndex);
 		ItemStack slotStack= targetSlot.getStack();
 		ItemStack cursorStack= this.getCursorStack();
 		
 		if ( ! stackSizesDifferent(cursorStack, player) ) return ;
-		LOGGER.info("Slot: "+ slotIndex);
-		LOGGER.info("SlotStack: " + slotStack +"(Max: " + slotStack.getMaxCount()+ ")");
-		LOGGER.info("CursorStack: " + cursorStack +"(Max: " + cursorStack.getMaxCount() + ")");
-		
-		//Check whether we're putting the item in a player inventory slot or non-player inventory slot.
 		Slot slot = this.slots.get(slotIndex);
 		boolean isPlayerInventory;
 		if ( true ) {
@@ -93,24 +98,15 @@ public abstract class ScreenHandlerMixin {
 			if (!player.equals(player2) && player2 != null) return;
 			isPlayerInventory= player2!=null;
 		}
-		LOGGER.info("Slot Type: " + (isPlayerInventory? "Non-player" : "Player"));
-		
-		boolean isPlayerStacksMore= checkPlayerStacksMore(cursorStack,player);
-		LOGGER.info("Player Stacks More:" + isPlayerStacksMore);
 		
 		boolean isCursorOverloaded= checkStackOverloaded(cursorStack, player, isPlayerInventory);
-		LOGGER.info("Cursor Overloaded: " + isCursorOverloaded);
 		
 		if( !isCursorOverloaded){
 			cursorStack.setHolder( isPlayerInventory? player:null);
 			cursorStack.getMaxCount();
-			
 		}
-		else if ( !slotStack.isEmpty() && (!ItemStack.areItemsAndComponentsEqual(cursorStack,slotStack) || slotStack.getMaxCount()-slotStack.getCount()<=0)){
-			LOGGER.info("Overloaded and cannot Stack nor Swap. Cancelling");
-			info.cancel();
-			
-		} else if (!slotStack.isEmpty()){
+		else if ( !slotStack.isEmpty() && (!ItemStack.areItemsAndComponentsEqual(cursorStack,slotStack) || slotStack.getMaxCount()-slotStack.getCount()<=0)){ info.cancel();	}
+		else if (!slotStack.isEmpty()){
 			int slotMax = slotStack.getMaxCount();
 			int slotCount= slotStack.getCount();
 			int slotRoom= slotMax-slotCount;
@@ -137,14 +133,6 @@ public abstract class ScreenHandlerMixin {
 		ItemStack dummyStackPlayer= createDummyStack(stack, player);
 		
 		return dummyStackInventory.getMaxCount() != dummyStackPlayer.getMaxCount() ;
-	}
-	
-	@Unique
-	private boolean checkPlayerStacksMore(ItemStack stack, Entity player){
-		ItemStack dummyStackInventory= createDummyStack(stack, null);
-		ItemStack dummyStackPlayer= createDummyStack(stack, player);
-		
-		return dummyStackInventory.getMaxCount() < dummyStackPlayer.getMaxCount() ;
 	}
 	
 	@Unique
