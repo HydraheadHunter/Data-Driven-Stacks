@@ -23,7 +23,7 @@ import java.util.Collection;
 public class GiveStackCommand {
 	public static final int MAX_STACKS = 100;
 	
-	public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
+	public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment ignoredRegistrationEnvironment) {
 	//Exactly the same register could as the GiveCommand, except with the literal "Stack" added on the end.
 		dispatcher.register(
 			CommandManager.literal("give")
@@ -54,7 +54,7 @@ public class GiveStackCommand {
 	//Takes the int argument and multiplies it by the requested item's max stack size. Then gives the player that many of the item and broadcasts feedback to ops.
 	private static int execute(ServerCommandSource source, ItemStackArgument item, Collection<ServerPlayerEntity> targets, int count) throws CommandSyntaxException {
 		ItemStack itemStack = item.createStack(1, false);
-		if (targets.size()>0) itemStack.setHolder((Entity)targets.toArray()[0]);
+		if (!targets.isEmpty()) itemStack.setHolder((Entity)targets.toArray()[0]);
 		int i = itemStack.getMaxCount();
 		
 		if (count > MAX_STACKS) {
@@ -106,8 +106,8 @@ public class GiveStackCommand {
 	private static MutableText GenerateFeedback(int size, int count, ItemStack stack, Collection<ServerPlayerEntity> targets  ){
 		int switchValue=  (count==1?0:1)+ (size==1?0:2) ;
 		return switch ( switchValue ){
-			case 0 -> Text.translatable( "commands.give.success.single.stack"   ,        stack.toHoverableText(), ((ServerPlayerEntity)targets.iterator().next()).getDisplayName()	);
-			case 1 -> Text.translatable( "commands.give.success.single.stacks"  , count, stack.toHoverableText(), ((ServerPlayerEntity)targets.iterator().next()).getDisplayName()	);
+			case 0 -> Text.translatable( "commands.give.success.single.stack"   ,        stack.toHoverableText(), targets.iterator().next().getDisplayName()	);
+			case 1 -> Text.translatable( "commands.give.success.single.stacks"  , count, stack.toHoverableText(), targets.iterator().next().getDisplayName()	);
 			case 2 -> Text.translatable( "commands.give.success.multiple.stack" ,        stack.toHoverableText(), size													);
 			case 3 -> Text.translatable( "commands.give.success.multiple.stacks", count, stack.toHoverableText(), size													);
 			default -> null; //This is just to satisfy the compiler. It's unreachable.

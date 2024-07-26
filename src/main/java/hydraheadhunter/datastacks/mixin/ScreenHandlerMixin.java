@@ -38,6 +38,7 @@ public abstract class ScreenHandlerMixin {
 	
 	@Shadow public abstract ItemStack getCursorStack();
 	
+	
 	/** Changes the behavior for click-and-drag item placement
 	 * For each slot being affected by a click-and-drag action,
 	 * overrides the result stack size, called `n`, with a math.min() call
@@ -63,10 +64,14 @@ public abstract class ScreenHandlerMixin {
 				to= @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;onPickupSlotClick(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/ClickType;)V")),
 	cancellable=true)
 	private void changeOverloadedPickUpBehavior(int slotIndex, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo info) {
+		ItemStack cursorStack= this.getCursorStack();
 		ClickType clickType= button==0 ? ClickType.LEFT:ClickType.RIGHT;
+		
+		if(slotIndex<0) { return;	}
+		
 		Slot targetSlot= this.slots.get(slotIndex);
 		ItemStack slotStack= targetSlot.getStack();
-		ItemStack cursorStack= this.getCursorStack();
+		
 		
 		if ( ! stackSizesDifferent(cursorStack, player) ) return ;
 		Slot slot = this.slots.get(slotIndex);
