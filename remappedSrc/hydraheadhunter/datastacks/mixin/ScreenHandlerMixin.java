@@ -44,14 +44,12 @@ public abstract class ScreenHandlerMixin {
 	 * overrides the result stack size, called `n`, with a math.min() call
 	 * comparing n against a dummyStack of the item in that slot.
 	 */
-	
-	@ModifyVariable(method = "internalOnSlotClick", at = @At("STORE"), ordinal = 5)
-	private int modifyItemStack2(int stackMaxCount, @Local Slot slot, @Local(ordinal=0) ItemStack stack ){
+	@ModifyVariable(method= "internalOnSlotClick", at=@At("STORE"), name="n")
+	private int modifyItemStack2(int stackMaxCount, @Local(name="slot2") Slot slot, @Local(name="itemStack2") ItemStack stack ){
 		Entity player = slot.inventory instanceof PlayerInventory ? ((PlayerInventory) slot.inventory).player:null;
 		ItemStack dummyStack= createDummyStack(stack,player);
 		stack.setHolder(player);
 		return Math.min( stackMaxCount, dummyStack.getMaxCount() );
-		//return stackMaxCount;
 	}
 	
 	/** Changes the behavior of click item placement.
