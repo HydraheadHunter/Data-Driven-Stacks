@@ -1,6 +1,5 @@
 package hydraheadhunter.datastacks.mixin;
 
-import hydraheadhunter.datastacks.DataDrivenStacks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
