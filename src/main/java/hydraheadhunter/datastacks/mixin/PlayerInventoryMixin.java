@@ -18,8 +18,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
-import static hydraheadhunter.datastacks.DataDrivenStacks.LOGGER;
-import static hydraheadhunter.datastacks.util.common.createDummyStack;
 import static java.lang.String.valueOf;
 
 /** Adds a call of stack#setHolder(player) before each call of getMaxCount

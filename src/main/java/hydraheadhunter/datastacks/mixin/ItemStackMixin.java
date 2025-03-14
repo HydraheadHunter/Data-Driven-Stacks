@@ -24,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import static hydraheadhunter.datastacks.DataDrivenStacks.*;
 import static java.lang.String.valueOf;
@@ -87,6 +88,7 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 					findGreatestValue = true;
 				else
 					findGreatestValue = !itemIsIn(thisAsStack, ModTags.Items.PLAYER_LESS);
+
 			}
 		}
 		
@@ -136,7 +138,7 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 			for (ComponentType<?> com : stackComponents2) { if (!com.equals(DataComponentTypes.MAX_STACK_SIZE)) dummy2.add(com); }
 			
 			
-			cir.setReturnValue(stack.isEmpty() && otherStack.isEmpty() ? true : Objects.equals(dummy1, dummy2));
+			cir.setReturnValue( ( stack.isEmpty()&&otherStack.isEmpty() ) || Objects.equals(dummy1, dummy2));
 			
 		}
 	}
@@ -173,7 +175,7 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 			.filter(entry -> itemIsIn(stack, entry.getValue())).toList();
 		}
 		
-		if (itemIsInValues.isEmpty()) return null;
+		if (this==null || itemIsInValues.isEmpty()) return null;
 		List<Map.Entry<Integer, TagKey<Item>>> localfilteredStream= itemIsInValues;
 		return findGreatestValue ? localfilteredStream.getLast(): localfilteredStream.getFirst();
 	}

@@ -29,8 +29,8 @@ public class DrawContextMixin {
 	
 	
 	
-	@Inject( method = "drawItemInSlot(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;IILjava/lang/String;)V", at=@At("HEAD"), cancellable = true)
-	private void overrideDrawFourDigits(TextRenderer textRenderer, ItemStack stack, int x, int y, @Nullable String countOverride, CallbackInfo info) {
+	@Inject( method = "drawStackOverlay(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;II)V", at=@At("HEAD"), cancellable = true)
+	private void overrideDrawFourDigits(TextRenderer textRenderer, ItemStack stack, int x, int y, CallbackInfo info) {
 		DrawContext context= (DrawContext)(Object) this;
 		int count = stack.getCount();
 		if (count > 99) {
@@ -39,8 +39,8 @@ public class DrawContextMixin {
 			int localYAdjust = count > 999? yAdjust4:yAdjust3;
 			
 			this.matrices.push();
-			if (stack.getCount() != 1 || countOverride != null) {
-				String string = countOverride == null ? valueOf(count) : countOverride;
+			if (stack.getCount() != 1 ) {
+				String string = valueOf(count);
 				this.matrices.scale(localScale, localScale, 1.0F);
 				this.matrices.translate(0.0F, 0.0F, 200.0F);
 				int xPos= (int)((x + 19 - 2 - textRenderer.getWidth(string) ) / localScale)+ localXAdjust;

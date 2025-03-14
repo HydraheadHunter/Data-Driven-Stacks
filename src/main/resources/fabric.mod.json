@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "data-stacks",
-	"version": "${version}",
+	"version": "${version}-{minecraft_version}",
 	"name": "DataDrivenStacks",
 	"description": "Makes max_stack_size data-driven. Increases the max_stack_size cap from 99 to 2048",
 	"authors": [
@@ -34,8 +34,8 @@
 		}
 	],
 	"depends": {
-		"fabricloader": ">=0.15.11",
-		"minecraft": "~1.21",
+		"fabricloader": ">=0.16.10",
+		"minecraft": "~1.21.4",
 		"java": ">=21",
 		"fabric-api": "*"
 	},

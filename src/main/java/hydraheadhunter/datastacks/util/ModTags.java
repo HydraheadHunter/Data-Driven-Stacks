@@ -19,18 +19,18 @@ public class ModTags {
 	
 	public static class Items {
 		
-		public static final TagKey<Item> VILLAGER_LESS = createTag("control/villagers_stack_less");
-		public static final TagKey<Item> VILLAGER_MORE = createTag("control/villagers_stack_more");
+		public static final TagKey<Item> VILLAGER_LESS = createTag("control.villagers_stack_less");
+		public static final TagKey<Item> VILLAGER_MORE = createTag("control.villagers_stack_more");
 		
-		public static final TagKey<Item> PLAYER_LESS   = createTag("control/players_stack_less");
-		public static final TagKey<Item> PLAYER_MORE   = createTag("control/players_stack_more");
+		public static final TagKey<Item> PLAYER_LESS   = createTag("control.players_stack_less");
+		public static final TagKey<Item> PLAYER_MORE   = createTag("control.players_stack_more");
 		
 		public static final Map<Integer, TagKey<Item>> STACK_SIZES;
 		
 		static {
 			Map<Integer, TagKey<Item>> tmpMap = new HashMap<>();
 			for(int ii = 1;  ii <= MAX_STACK_SIZE_CAP; ii+=1) {
-				int stackSize = /*1 <<*/ ii;
+				int stackSize = ii; // 1 <<
 				String tagName = "max_stack_size_" + stackSize;
 				tmpMap.put(stackSize, createTag(tagName));
 				addReloadListener(tagName);
@@ -44,10 +44,10 @@ public class ModTags {
 		}
 		
 		public static void addReloadListeners(){
-			addReloadListener( "entity/villagers_stack_less"	);
-			addReloadListener( "entity/villagers_stack_more"	);
-			addReloadListener( "entity/players_stack_less"	);
-			addReloadListener( "entity/players_stack_more"	);
+			addReloadListener( "control.villagers_stack_less"	);
+			addReloadListener( "control.villagers_stack_more"	);
+			addReloadListener( "control.players_stack_less"	);
+			addReloadListener( "control.players_stack_more"	);
 		}
 		private static void addReloadListener(String path){
 			ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener( new ModTagsListener( path ));

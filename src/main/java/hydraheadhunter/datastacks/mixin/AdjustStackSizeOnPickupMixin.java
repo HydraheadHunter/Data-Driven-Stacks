@@ -31,7 +31,7 @@ public interface AdjustStackSizeOnPickupMixin {
 	 * using the correct max sourceStack size.
 	 */ @Redirect(method="pickUpItem", at= @At(value = "INVOKE", target = "Lnet/minecraft/inventory/SimpleInventory;canInsert(Lnet/minecraft/item/ItemStack;)Z"))
 	private static boolean redirectCanInsert(SimpleInventory inventory, ItemStack stack, @Local(argsOnly = true) MobEntity entity){
-		return canInsertDummy( entity, inventory, createDummyStack(stack, entity) );
+		 return canInsertDummy( entity, inventory, createDummyStack(stack, entity) );
 	}
 	
 	/** Redirects the call of addStack(ItemStack) through some logic.

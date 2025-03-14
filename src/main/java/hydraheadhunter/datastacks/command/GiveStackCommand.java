@@ -31,14 +31,14 @@ public class GiveStackCommand {
 				.then(
 					CommandManager.argument("targets", EntityArgumentType.players())
 						.then(
-							CommandManager.argument("item", ItemStackArgumentType.itemStack(commandRegistryAccess))
+							CommandManager.argument("data/data_stacks/tags/item", ItemStackArgumentType.itemStack(commandRegistryAccess))
 								.then(
 									CommandManager.argument("count", IntegerArgumentType.integer(1,100))
 									.then(CommandManager.literal("stack")
 									.executes(
 									context -> execute(
 									context.getSource(),
-									ItemStackArgumentType.getItemStackArgument(context, "item"),
+									ItemStackArgumentType.getItemStackArgument(context, "data/data_stacks/tags/item"),
 									EntityArgumentType.getPlayers(context, "targets"),
 									IntegerArgumentType.getInteger(context, "count")
 									)

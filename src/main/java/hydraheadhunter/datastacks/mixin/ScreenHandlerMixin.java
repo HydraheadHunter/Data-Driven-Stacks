@@ -38,14 +38,14 @@ public abstract class ScreenHandlerMixin {
 	
 	@Shadow public abstract ItemStack getCursorStack();
 	
-	
+	//TODO: CRASHES BUILD
 	/** Changes the behavior for click-and-drag item placement
 	 * For each slot being affected by a click-and-drag action,
 	 * overrides the result stack size, called `n`, with a math.min() call
 	 * comparing n against a dummyStack of the item in that slot.
 	 */
-	@ModifyVariable(method= "internalOnSlotClick", at=@At("STORE"), name="n")
-	private int modifyItemStack2(int stackMaxCount, @Local(name="slot2") Slot slot, @Local(name="itemStack2") ItemStack stack ){
+	@ModifyVariable(method="internalOnSlotClick", at=@At("STORE"), name = "n")
+	private int modifyItemStack2(int stackMaxCount, @Local(ordinal=0) Slot slot, @Local(ordinal=1) ItemStack stack ){
 		Entity player = slot.inventory instanceof PlayerInventory ? ((PlayerInventory) slot.inventory).player:null;
 		ItemStack dummyStack= createDummyStack(stack,player);
 		stack.setHolder(player);
