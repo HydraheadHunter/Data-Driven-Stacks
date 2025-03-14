@@ -2,6 +2,8 @@ package hydraheadhunter.datastacks.mixin;
 
 
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import com.sun.jna.platform.win32.COM.TypeInfoUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -12,6 +14,7 @@ import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.ClickType;
 import net.minecraft.util.collection.DefaultedList;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,7 +26,11 @@ import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Objects;
+import java.util.Set;
+
 import static hydraheadhunter.datastacks.util.common.createDummyStack;
+import static java.lang.String.valueOf;
 
 /** Changes the behaviors of items that are shift-clicked betwixt different inventories.
  * Specifically makes sure that when items are moved betwixt two inventories,
@@ -39,19 +46,43 @@ public abstract class ScreenHandlerMixin {
 	@Shadow public abstract ItemStack getCursorStack();
 	
 	
-	/** Changes the behavior for click-and-drag item placement
+	@Shadow @Final private static Logger LOGGER;
+	
+	
+	/** Changes the final behavior for click-and-drag item placement
 	 * For each slot being affected by a click-and-drag action,
 	 * overrides the result stack size, called `n`, with a math.min() call
 	 * comparing n against a dummyStack of the item in that slot.
 	 */
-	@ModifyVariable(method= "internalOnSlotClick", at=@At("STORE"), name="n")
-	private int modifyItemStack2(int stackMaxCount, @Local(name="slot2") Slot slot, @Local(name="itemStack2") ItemStack stack ){
-		Entity player = slot.inventory instanceof PlayerInventory ? ((PlayerInventory) slot.inventory).player:null;
-		ItemStack dummyStack= createDummyStack(stack,player);
-		stack.setHolder(player);
-		return Math.min( stackMaxCount, dummyStack.getMaxCount() );
+	@ModifyVariable(method="internalOnSlotClick", at=@At("STORE"), ordinal=5)
+	private int setInventorySensitiveStackSize(int nn, @Local(ordinal=0) Slot slot, @Local(ordinal = 0) ItemStack stack){
+		Entity stackOwner = slot.inventory instanceof PlayerInventory ? ((PlayerInventory)slot.inventory).player:null;
+		int dummyMax= createDummyStack(stack,stackOwner).getMaxCount();
+		//LOGGER.info( slot.inventory instanceof PlayerInventory ? "Player":"Non-player" );
+		//LOGGER.info( "Slot#"+ slot.id + " Stack Max"+ nn );
+		//LOGGER.info( "StackOwner: "+ (stackOwner!=null? stackOwner.toString():"Null"));
+		//LOGGER.info( "DummyMax: "+ dummyMax);
+		return Math.min(nn,dummyMax);
+	}
+	/*
+	@Inject(method="internalOnSlotClick", at=@At(value="INVOKE",target="Lnet/minecraft/screen/ScreenHandler;calculateStackSize(Ljava/util/Set;ILnet/minecraft/item/ItemStack;)I", shift= At.Shift.AFTER))
+	private void setSlotStackSize(int slotIndex, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci, @Local(ordinal=0) Slot slot, @Local(ordinal=1) ItemStack stack, @Local(ordinal = 1) LocalRef<Integer> nn){
+		LOGGER.info("DEBUG");
+		LOGGER.info( slot.inventory instanceof PlayerInventory ? "PLAYER":"OTHER" );
+		Entity slotOwner = slot.inventory instanceof PlayerInventory ? ((PlayerInventory) slot.inventory).player:null;
+		stack.setHolder(slotOwner);
+		nn= Math.min( nn, createDummyStack(stack,slotOwner).getMaxCount() );
+		
 	}
 	
+	@Inject(method="calculateStackSize", at= @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;getMaxCount()I"),cancellable = true)
+	private static void setSlotStackSizeB(Set<Slot> slots, int mode, ItemStack stack, CallbackInfoReturnable<Integer> cir){
+		Slot slot =((Slot)slots.toArray()[0]);
+		Entity slotOwner = slot.inventory instanceof PlayerInventory ? ((PlayerInventory) slot.inventory).player:null;
+		stack.setHolder(slotOwner);
+		cir.setReturnValue( createDummyStack(stack,slotOwner).getMaxCount() );
+	}
+	*/
 	/** Changes the behavior of click item placement.
 	 * Checks if stack size distinction for player/non-player. If no, returns to vanilla behavior.
 	 * Checks if stack is smaller than max stack for target slot. If so, updates holder and returns to vanilla behavior.
@@ -115,6 +146,7 @@ public abstract class ScreenHandlerMixin {
 	}
 	
 	/** Boolean check for player/non-player stack-size distinction. */
+	
 	@Unique
 	private boolean stackSizesDifferent(ItemStack stack, Entity player) {
 		if ( stack.isEmpty())  return false;
