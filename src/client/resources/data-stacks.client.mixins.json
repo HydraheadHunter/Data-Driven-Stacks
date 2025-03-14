@@ -1,11 +1,12 @@
 {
-	"required": true,
-	"package": "hydraheadhunter.datastacks.mixin.client",
-	"compatibilityLevel": "JAVA_21",
-	"client": [
-      "DrawContextMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
+  "required": true,
+  "package": "hydraheadhunter.datastacks.mixin.client",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "DrawContextMixin",
+    "HandedScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
 	}
 }

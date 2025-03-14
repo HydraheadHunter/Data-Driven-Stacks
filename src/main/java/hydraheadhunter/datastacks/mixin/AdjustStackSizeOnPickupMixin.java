@@ -24,7 +24,6 @@ import static hydraheadhunter.datastacks.util.common.createDummyStack;
 @Mixin(InventoryOwner.class)
 public interface AdjustStackSizeOnPickupMixin {
 	
-	
 	/** Redirects the call of canInsert(ItemStack) to canInsertDummy(...),
 	 * which takes a dummy version of the sourceStack as an argument to
 	 * ensure the entity checking if it can pick something up is
