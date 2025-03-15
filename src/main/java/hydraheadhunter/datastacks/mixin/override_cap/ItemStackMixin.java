@@ -11,6 +11,9 @@ import static hydraheadhunter.datastacks.DataDrivenStacks.MAX_STACK_SIZE_CAP;
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
 	
+	@ModifyArg(method = "method_57371", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/dynamic/Codecs;rangedInt(II)Lcom/mojang/serialization/Codec;"), index = 0)
+	private static int changeMinStackSizeLimit(int original) { return 0; }
+	
 	@ModifyArg(method = "method_57371", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/dynamic/Codecs;rangedInt(II)Lcom/mojang/serialization/Codec;"), index = 1)
 	private static int changeMaxStackSizeLimit(int original) { return MAX_STACK_SIZE_CAP; }
 	

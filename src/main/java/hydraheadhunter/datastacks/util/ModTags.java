@@ -19,12 +19,14 @@ public class ModTags {
 	
 	public static class Items {
 		
+		
 		public static final TagKey<Item> VILLAGER_LESS = createTag("control/villagers_stack_less");
 		public static final TagKey<Item> VILLAGER_MORE = createTag("control/villagers_stack_more");
 		
 		public static final TagKey<Item> PLAYER_LESS   = createTag("control/players_stack_less");
 		public static final TagKey<Item> PLAYER_MORE   = createTag("control/players_stack_more");
 		
+		public static final TagKey<Item> MAX_STACK_SIZE_0= createTag("max_stack_size_0");
 		public static final Map<Integer, TagKey<Item>> STACK_SIZES;
 		
 		static {
@@ -48,6 +50,7 @@ public class ModTags {
 			addReloadListener( "control/villagers_stack_more"	);
 			addReloadListener( "control/players_stack_less"	);
 			addReloadListener( "control/players_stack_more"	);
+			addReloadListener( "max_stack_size_0"	);
 		}
 		private static void addReloadListener(String path){
 			ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener( new ModTagsListener( path ));

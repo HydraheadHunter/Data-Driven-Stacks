@@ -15,6 +15,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.TagKey;
+import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -24,10 +26,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 import static hydraheadhunter.datastacks.DataDrivenStacks.*;
-import static java.lang.String.valueOf;
+
 
 /** Mixes into the ItemStack class at a number of places to
  * facilitate overwriting default stack sizes with
@@ -36,6 +37,10 @@ import static java.lang.String.valueOf;
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack, ItemStackMixinInterface {
 	@Shadow public abstract boolean isEmpty();
+	
+	@Shadow @Final private static Logger LOGGER;
+	
+	
 	@Unique public EntityType<?> holderType;
 	@Unique public List<Map.Entry<Integer, TagKey<Item>>> itemIsInValues = null;
 	
@@ -65,6 +70,13 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 		ItemStack thisAsStack = (ItemStack) (Object) this;
 		Map.Entry<Integer, TagKey<Item>> entry;
 		boolean findGreatestValue = true;
+		
+		// If in max stack size 0, empty it.
+		if (thisAsStack.isIn(ModTags.Items.MAX_STACK_SIZE_0) && MaxStackSizeMayChange(thisAsStack, MAX_STACK_SIZE_CAP+1)) {
+			thisAsStack.copyAndEmpty();
+			return;
+			
+		}
 		
 		//Shulkerboxes stack differently whether full or empty
 		if( blockIsIn(thisAsStack, BlockTags.SHULKER_BOXES)){
@@ -163,7 +175,7 @@ public abstract class ItemStackMixin implements ComponentHolder, FabricItemStack
 		return contents1.equals(contents2);
 	}
 	
-	/** Finds all entries of an item in the max_stack_size_X tags ( 1<= X <=2048 )
+	/** Finds all entries of an item in the max_stack_size_X tags ( 0<= X <=2048 )
 	 * Iff itemIsInValues is null.
 	 * Stores the found values in itemIsInValues
 	 */
